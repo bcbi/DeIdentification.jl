@@ -1,8 +1,13 @@
 using DeIdentification
 using CSV
 
-filename = "/Users/pstey/projects_code/DeIdentification/data/dx.csv"
-dat = CSV.read(filename)
+data_dir = "/Users/pstey/projects_code/DeIdentification/data"
+
+pat = CSV.read(joinpath(data_dir, "pat.csv"))
+dx = CSV.read(joinpath(data_dir, "dx.csv"))
+med = CSV.read(joinpath(data_dir, "med.csv"))
+
+
 
 
 dat2 = DataFrame(id = [4, 6, 7, 3, 3, 6, 7],
@@ -13,11 +18,3 @@ dat2 = DataFrame(id = [4, 6, 7, 3, 3, 6, 7],
 
 
 dat2[:x3] = DateTime.(dat2[:x3])
-
-
-# salts = Dict{String, Tuple{String, Symbol}}()
-# hash_all_columns!(dat2, salts, [:id, :x2])
-#
-#
-# salt_lkup = build_salt_dict(unique(dat[:patient_primary_mrn_ed_visit]))
-# dat[:, 5] = hash_column!(dat[:, 5], salt_lkup)
