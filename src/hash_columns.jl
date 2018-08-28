@@ -36,7 +36,7 @@ function hash_column!(df, col_name::Symbol, salt::String)
             continue
         else
             plaintext = string(df[i, col_name])
-            res[i] = hexdigest("sha256", string(plaintext, salt))
+            res[i] = bytes2hex(sha256(string(plaintext, salt)))
         end
     end
 
@@ -54,7 +54,7 @@ function hash_column!(df, col_name::Symbol)
             continue
         else
             plaintext = string(df[i, col_name])
-            res[i] = hexdigest("sha256", plaintext)
+            res[i] = bytes2hex(sha256(plaintext))
         end
     end
 
@@ -63,7 +63,7 @@ function hash_column!(df, col_name::Symbol)
 end
 
 
-function hash_column!(df, col_name::Symbol, id_dict::Dict{String, Int})
+function hash_column!(df, col_name::Symbol, id_dict::Dict{String, Int}, salt_dict::Dict{String, Tuple{String, Symbol}})
     n = nrow(df)
     res = Array{Union{String, Missing}, 1}(n)
 
@@ -71,8 +71,18 @@ function hash_column!(df, col_name::Symbol, id_dict::Dict{String, Int})
         if ismissing(df[i, col_name])
             continue
         else
-            plaintext = string(df[i, col_name])
-            res[i] = hexdigest("sha256", plaintext)
+            cleartext = string(df[i, col_name])
+
+            if haskey(salt_dict, cleartext)
+                salt = salt_dict[cleartext][1]
+                res[i] = bytes2hex(sha256(string(cleartext, salt)))
+            else
+                # Update `salt_dict` if we don't find the cleartext
+                salt = randstring(16)
+                res[i] = bytes2hex(sha256(string(cleartext, salt)))
+
+                salt_dict[cleartext] = (salt, col_name)
+            end
         end
     end
 
@@ -91,13 +101,13 @@ function hash_all_columns!(df::DataFrame,
                            salt_col_names::Array{Symbol, 1},
                            id_cols::Array{Symbol, 1},
                            id_dicts::Array{Symbol, 1},
-                           salt::String)
+                           salt_dict::Dict{String, Tuple{String, Symbol}})
 
     for col in hash_col_names
         hash_column!(df, col)
     end
 
     for col in salt_col_names
-        hash_column!(df, col, salt)
+        hash_column!(df, col, salt_dict)
     end
 end

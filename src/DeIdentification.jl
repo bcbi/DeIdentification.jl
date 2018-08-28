@@ -3,7 +3,7 @@ module DeIdenficiation
 export DeIdentified, DeIdDataFrame
 
 using DataFrames
-using Nettle
+using SHA
 using CSV
 using Dates
 using Random
@@ -59,8 +59,9 @@ end
 
 struct DeIdentified
     df_array::Array{DeIdDataFrame, 1}
-    dateshift_dict::Dict{String, Int}          # unique ID and num days
-    salt::String
+    dateshift_dict::Dict{String, Int}                 # unique ID and num days
+    salt_dict::Dict{String, Tuple{String, Symbol}}    # cleartext, salt, col name
+
 end
 
 
