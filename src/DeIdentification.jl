@@ -37,7 +37,7 @@ function DeIdDataFrame(df::DataFrame,
                        dateshift_dict::Dict{DateTime, Int},
                        id_cols::Array{Symbol, 1},
                        id_dicts::Array{Dict{String, Int}, 1},
-                       salt::String)
+                       salt_dict::Dict{String, Tuple{String, Symbol}})
     df_new = copy(df)
 
     # Here we shuffle the rows so that ID creation does not
@@ -49,7 +49,7 @@ function DeIdDataFrame(df::DataFrame,
         delete!(df_new, col)
     end
 
-    hash_all_columns!(df_new, hash_cols, salt_cols, id_cols, id_dicts, salt)
+    hash_all_columns!(df_new, hash_cols, salt_cols, id_cols, id_dicts, salt_dict)
     dateshift_all_cols!(df_new, dateshift_cols, dateshift_dict)
 
     res = new(df_new, hash_cols, salt_cols, dateshift_cols)
@@ -61,7 +61,6 @@ struct DeIdentified
     df_array::Array{DeIdDataFrame, 1}
     dateshift_dict::Dict{String, Int}                 # unique ID and num days
     salt_dict::Dict{String, Tuple{String, Symbol}}    # cleartext, salt, col name
-
 end
 
 
@@ -69,8 +68,10 @@ end
     DeIdentified()
 This is the constructor for the `DeIdentified` struct. We use this type to store arrays of `DeIdDataFrame` variables, while also keeping a common `salt_dict` and `dateshift_dict` between `DeIdDataFrame`s.
 """
-function DeIdentified(salt)
-    res = new(Array{DeIdDataFrame, 1}(0), Dict{String, Int}(0), salt)
+function DeIdentified()
+    res = new(Array{DeIdDataFrame, 1}(),
+              Dict{String, Int}(),
+              Dict{String, Tuple{String, Symbol}}())
     return res
 end
 
