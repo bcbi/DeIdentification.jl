@@ -12,21 +12,21 @@ in the dataframes.
 """
 function id_generation(df, col_name::Symbol, id_dict::Dict{String, Int})
     n = nrow(df)
-    res = Array{Union{Int, Missing}, 1}(undef, n)
+    new_ids = Array{Union{Int, Missing}, 1}(undef, n)
     for i = 1:n
         if ismissing(df[i, col_name])
-            res[i] = missing
+            new_ids[i] = missing
         else
             if haskey(id_dict, df[i, col_name])
-                res[i] = id_dict[df[i, col_name]]
+                new_ids[i] = id_dict[df[i, col_name]]
             else
                 new_id = 1 + length(id_dict)
                 id_dict[df[i, col_name]] = new_id
-                res[i] = new_id
+                new_ids[i] = new_id
             end
         end
     end
-    res
+    new_ids
 end
 
 
@@ -45,7 +45,7 @@ function hash_column!(df, col_name::Symbol, salt_dict::Dict{String, Tuple{String
 
     for i = 1:n
         if ismissing(df[i, col_name])
-            continue
+            res[i] = missing
         elseif haskey(salt_dict, df[i, col_name])
             cleartext = string(df[i, col_name])
             salt = salt_dict[cleartext]
@@ -59,7 +59,7 @@ function hash_column!(df, col_name::Symbol, salt_dict::Dict{String, Tuple{String
     end
 
     df[:, col_name] = res
-    return nothing
+    nothing
 end
 
 
@@ -77,7 +77,7 @@ function hash_column!(df, col_name::Symbol)
     end
 
     df[:, col_name] = res
-    return nothing
+    nothing
 end
 
 
@@ -109,6 +109,28 @@ function hash_all_columns!(df::DataFrame,
         # Indicate that new column is just obfuscated old column
         new_name = Symbol(string("obf_", col))
         df[col] = id_generation(df, col, id_dict[j])
+        rename!(df, (col => new_name))
+    end
+end
+
+
+function hash_all_columns!(df::DataFrame,
+                           hash_col_names::Array{Symbol, 1},
+                           id_cols::Array{Symbol, 1},
+                           id_dicts::Array{Dict{String, Int}, 1})
+
+    for col in hash_col_names
+        hash_column!(df, col)
+    end
+
+    # This next loop handles the ID columns for which we want
+    # to convert the hexdigest in to a non-ridiculous ID.
+    for (j, col) in enumerate(id_cols)
+
+        df[col] = id_generation(df, col, id_dicts[j])
+
+        # Indicate that new column is just obfuscated old column
+        new_name = Symbol(string("obf_", col))
         rename!(df, (col => new_name))
     end
 end
