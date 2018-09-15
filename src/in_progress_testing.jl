@@ -2,8 +2,14 @@ using DeIdentification
 using CSV
 using DataFrames
 using Dates
+using YAML
+using Random
 
 data_dir = "/Users/pstey/projects_code/DeIdentification/data"
+cd(data_dir)
+data = YAML.load(open("../test/pets_config.yml"))
+
+println(data)
 
 pat = CSV.read(joinpath(data_dir, "pat.csv"))
 dx = CSV.read(joinpath(data_dir, "dx.csv"))
@@ -23,9 +29,19 @@ df2 = DataFrame(id = [6, 5, 3, 4, 5],
 
 df1[:x3] = DateTime.(df1[:x3])
 
+
+# Check hashing and research ID generation
 id_dict = Dict{String, Int}()
 hash_column!(df1, :id)
 hash_column!(df2, :id)
 
 @assert id_generation(df1, :id, id_dict) == [1, 2, 3, 4, 4, 5, 3]
 @assert id_generation(df2, :id, id_dict) == [2, 5, 4, 1, 5]
+
+dateshift_dict = Dict{Int, Int}()
+deid_df1 = DeIdDataFrame(df1,
+                         hash_cols = [:id],
+                         dateshift_cols = [:x3],
+                         dateshift_dict = dateshift_dict,
+                         id_cols = [:id],
+                         id_dicts = [id_dict])
