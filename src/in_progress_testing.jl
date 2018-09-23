@@ -1,15 +1,18 @@
 using DeIdentification
+
+
 using CSV
 using DataFrames
 using Dates
 using YAML
 using Random
+using Memento
+
 
 data_dir = "/Users/pstey/projects_code/DeIdentification/data"
 cd(data_dir)
-data = YAML.load(open("../test/pets_config.yml"))
-
-println(data)
+cfg = YAML.load(open("../test/ehr_data.yml"))
+println(cfg)
 
 pat = CSV.read(joinpath(data_dir, "pat.csv"))
 dx = CSV.read(joinpath(data_dir, "dx.csv"))

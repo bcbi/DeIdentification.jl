@@ -2,7 +2,10 @@
 
 """
     add_dataframe!(de_id, df, hash_cols, salt_cols, dateshift_cols)
-This function adds a dataframe to a `DeIdentified` struct. It works one dataframe at a time. It is important to note that this function modifies the `deidentified`, the `salt_dict`
+
+This function adds a dataframe to a `DeIdentified` struct. It works one dataframe
+at a time. It is important to note that this function modifies the `deidentified`
+and the `salt_dict` objects.
 """
 function add_dataframe!(deid::DeIdentified, df::DataFrame, hash_cols, salt_cols, dateshift_cols)
     if df ∈ map(x -> x.df, deid.df_array)
