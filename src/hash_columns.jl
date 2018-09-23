@@ -1,16 +1,16 @@
 
 
 """
-    id_generation(df, col_name, id_dict)
-This function is effectively for generating something like a research ID. That is,
-for those cases in which we want to hash an ID (not salt) and preserve linkages
-across data sets, it's nicer to have a numeric value rather than 64-character hash
-digest to look at. Note that using this function pre-supposes that the rows of the
-data frame have been shuffled, as we do in the DeIdDataFrame() construnctor. Otherwise,
-we risk potentially leaking some information related to the order of the observations
-in the dataframes.
+    rid_generation(df, col_name, id_dict)
+This function is for generating a research ID from a hashdigest ID. That
+is, for those cases in which we want to hash an ID (not salt) and preserve
+linkages across data sets, it's nicer to have a numeric value rather than
+64-character hash digest to look at. Note that using this function pre-supposes
+that the rows of the data frame have been shuffled, as we do in the
+DeIdDataFrame() construnctor. Otherwise, we risk potentially leaking some
+information related to the order of the observations in the dataframes.
 """
-function id_generation(df, col_name::Symbol, id_dict::Dict{String, Int})
+function rid_generation(df, col_name::Symbol, id_dict::Dict{String, Int})
     n = nrow(df)
     new_ids = Array{Union{Int, Missing}, 1}(undef, n)
     for i = 1:n
@@ -108,7 +108,7 @@ function hash_all_columns!(df::DataFrame,
     for (j, col) in enumerate(id_cols)
         # Indicate that new column is just obfuscated old column
         new_name = Symbol(string("obf_", col))
-        df[col] = id_generation(df, col, id_dict[j])
+        df[col] = rid_generation(df, col, id_dict[j])
         rename!(df, (col => new_name))
     end
 end
@@ -127,7 +127,7 @@ function hash_all_columns!(df::DataFrame,
     # to convert the hexdigest in to a non-ridiculous ID.
     for (j, col) in enumerate(id_cols)
 
-        df[col] = id_generation(df, col, id_dicts[j])
+        df[col] = rid_generation(df, col, id_dicts[j])
 
         # Indicate that new column is just obfuscated old column
         new_name = Symbol(string("obf_", col))

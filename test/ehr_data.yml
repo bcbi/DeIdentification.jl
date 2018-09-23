@@ -1,0 +1,15 @@
+project:      "ehr"
+project_seed: 42          # for reproducibility
+log_path:     "../logs"
+
+datasets:
+    - dx:
+        - filename:        "../data/dx.csv"
+        - hashed_cols:     ["EncounterEpicCSN", "PatientPrimaryMRN"]
+        - salted_cols:     []
+        - date_shift_cols: ["ArrivalDateandTime"]
+    - pat:
+        - filename:        "../data/pat.csv"
+        - hashed_cols:     ["EncounterEpicCSN", "PatientPostalCode"]
+        - salted_cols:     ["PatientLastName"]
+        - date_shift_cols: ["ArrivalDateandTime", "DepartureDateandTime", "PatientBirthDate"]

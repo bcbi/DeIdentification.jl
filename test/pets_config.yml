@@ -1,7 +1,7 @@
 # YAML file specifying the datasets to be de-identified and how to hand
 # particular columns (e.g., hash, hash-and-salt, remove, date shift).
 
-project_seed: 137          # probably not needed
+project_seed: 42          # for reproducibility
 
 log_path: "../logs"
 
