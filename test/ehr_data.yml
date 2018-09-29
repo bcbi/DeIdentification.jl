@@ -5,11 +5,13 @@ log_path:     "../logs"
 datasets:
     - dx:
         - filename:        "../data/dx.csv"
-        - hashed_cols:     ["EncounterEpicCSN", "PatientPrimaryMRN"]
-        - salted_cols:     []
-        - date_shift_cols: ["ArrivalDateandTime"]
+        - hash_cols:       ["EncounterEpicCSN", "PatientPrimaryMRN"]
+        - salt_cols:       []
+        - dateshift_cols: ["ArrivalDateandTime"]
+        - drop_cols:       []
     - pat:
         - filename:        "../data/pat.csv"
-        - hashed_cols:     ["EncounterEpicCSN", "PatientPostalCode"]
-        - salted_cols:     ["PatientLastName"]
-        - date_shift_cols: ["ArrivalDateandTime", "DepartureDateandTime", "PatientBirthDate"]
+        - hash_cols:       ["EncounterEpicCSN", "PatientPostalCode"]
+        - salt_cols:       ["PatientLastName"]
+        - dateshift_cols: ["ArrivalDateandTime", "DepartureDateandTime", "PatientBirthDate"]
+        - drop_cols:       []
