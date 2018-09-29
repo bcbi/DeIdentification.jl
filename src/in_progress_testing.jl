@@ -14,11 +14,27 @@ cd(data_dir)
 cfg = YAML.load(open("../test/ehr_data.yml"))
 println(cfg)
 
+
+proj_config = DeIdConfig("../test/ehr_data.yml")
+
+deid = DeIdentified(proj_config)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pat = CSV.read(joinpath(data_dir, "pat.csv"))
 dx = CSV.read(joinpath(data_dir, "dx.csv"))
 med = CSV.read(joinpath(data_dir, "med.csv"))
-
-
 
 
 df1 = DataFrame(id = [4, 6, 7, 3, 3, 5, 7],

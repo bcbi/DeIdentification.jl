@@ -2,12 +2,12 @@
 
 """
     rid_generation(df, col_name, id_dict)
-This function is for generating a research ID from a hashdigest ID. That
+This function is for generating a research ID from a hash digest ID. That
 is, for those cases in which we want to hash an ID (not salt) and preserve
 linkages across data sets, it's nicer to have a numeric value rather than
 64-character hash digest to look at. Note that using this function pre-supposes
 that the rows of the data frame have been shuffled, as we do in the
-DeIdDataFrame() construnctor. Otherwise, we risk potentially leaking some
+`DeIdDataFrame()` construnctor. Otherwise, we risk potentially leaking some
 information related to the order of the observations in the dataframes.
 """
 function rid_generation(df, col_name::Symbol, id_dict::Dict{String, Int})
@@ -86,15 +86,17 @@ end
     hash_all_columns!(df, salt_dict, hash_col_names, salt_col_names)
 This function simply iterates over columns to be hashed, those to be salted and
 hashed, and those for which we want to generate sane-looking research IDs. Note
-that the order of entries in the `id_cols` and `id_dicts` arrays must be match.
-That is, the j-th Symbol in `id_cols` ought to the column name of the column
-whose hashed values and research IDs live in the j-th dictionary of `id_dicts`.
+that the `id_dicts` nested dictionary stores dictionaries for each column for
+which we have generated research IDs. Also note that this approach presumes if
+we have a column (e.g., `:ssn`) for which we generate a research ID in one
+dataframe, then all subsequent columns in other dataframes must have the same
+column name (i.e., `:ssn`).
 """
-function hash_all_columns!(df::DataFrame,
+function hash_all_columns!(df::DataFrames.DataFrame,
                            hash_col_names::Array{Symbol, 1},
                            salt_col_names::Array{Symbol, 1},
                            id_cols::Array{Symbol, 1},
-                           id_dicts::Array{Dict{String, Int}, 1},
+                           id_dicts::Dict{Symbol, Dict{String, Int}},
                            salt_dict::Dict{String, Tuple{String, Symbol}})
 
     for col in hash_col_names
@@ -105,19 +107,23 @@ function hash_all_columns!(df::DataFrame,
         hash_column!(df, col, salt_dict)
     end
 
-    for (j, col) in enumerate(id_cols)
-        # Indicate that new column is just obfuscated old column
-        new_name = Symbol(string("obf_", col))
-        df[col] = rid_generation(df, col, id_dict[j])
+    for col in id_cols
+        if !haskey(id_dicts, col)
+            id_dicts[col] = Dict{String, Int}()
+        end
+
+        # Indicate that new column is just our Research ID column
+        new_name = Symbol(string("rid_", col))
+        df[col] = rid_generation(df, col, id_dicts[col])
         rename!(df, (col => new_name))
     end
 end
 
 
-function hash_all_columns!(df::DataFrame,
+function hash_all_columns!(df::DataFrames.DataFrame,
                            hash_col_names::Array{Symbol, 1},
                            id_cols::Array{Symbol, 1},
-                           id_dicts::Array{Dict{String, Int}, 1})
+                           id_dicts::Dict{Symbol, Dict{String, Int}})
 
     for col in hash_col_names
         hash_column!(df, col)
@@ -125,12 +131,15 @@ function hash_all_columns!(df::DataFrame,
 
     # This next loop handles the ID columns for which we want
     # to convert the hexdigest in to a non-ridiculous ID.
-    for (j, col) in enumerate(id_cols)
+    for col in id_cols
+        if !haskey(id_dicts, col)
+            id_dicts[col] = Dict{String, Int}()
+        end
 
-        df[col] = rid_generation(df, col, id_dicts[j])
+        df[col] = rid_generation(df, col, id_dicts[col])
 
-        # Indicate that new column is just obfuscated old column
-        new_name = Symbol(string("obf_", col))
+        # Indicate that new column is just our Research ID column
+        new_name = Symbol(string("rid_", col))
         rename!(df, (col => new_name))
     end
 end
