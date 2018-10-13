@@ -2,6 +2,7 @@ project:                "ehr"
 project_seed:           42          # for reproducibility
 log_path:               "../logs"
 max_dateshift_days:     30
+output_path:            "../output"
 
 datasets:
     - dx:
