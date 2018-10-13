@@ -12,3 +12,9 @@
 ```julia
 Pkg.clone("https://github.com/bcbi/DeIdentification.jl.git")
 ```
+
+# Important Notes
+There are a few subtle points that must be kept in mind when using this package. These are discussed below.
+
+## Date Shifting.
+In the current implementation, date shifting is done by selecting a random random integer, _d_, between -_N_ and _N_. Where _N_ is a user-specified argument in the YAML file (or otherwise, passed directly to the `DeIdDataFrame()` constructor).

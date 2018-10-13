@@ -1,17 +1,24 @@
-project:      "ehr"
-project_seed: 42          # for reproducibility
-log_path:     "../logs"
+project:                "ehr"
+project_seed:           42          # for reproducibility
+log_path:               "../logs"
+max_dateshift_days:     30
 
 datasets:
     - dx:
         - filename:        "../data/dx.csv"
         - hash_cols:       ["EncounterEpicCSN", "PatientPrimaryMRN"]
         - salt_cols:       []
-        - dateshift_cols: ["ArrivalDateandTime"]
+        - dateshift_cols:  ["ArrivalDateandTime"]
         - drop_cols:       []
     - pat:
         - filename:        "../data/pat.csv"
         - hash_cols:       ["EncounterEpicCSN", "PatientPostalCode"]
         - salt_cols:       ["PatientLastName"]
-        - dateshift_cols: ["ArrivalDateandTime", "DepartureDateandTime", "PatientBirthDate"]
+        - dateshift_cols:  ["ArrivalDateandTime", "DepartureDateandTime", "PatientBirthDate"]
+        - drop_cols:       []
+    - med:
+        - filename:        "../data/med.csv"
+        - hash_cols:       ["EncounterEpicCSN"]
+        - salt_cols:       []
+        - dateshift_cols:  ["ArrivalDateandTime"]
         - drop_cols:       []
