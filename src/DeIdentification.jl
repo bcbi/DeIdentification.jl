@@ -8,6 +8,12 @@ import CSV
 import Dates
 import SHA: bytes2hex, sha256
 import Random: shuffle
+import Memento
+
+
+# logger = Memento.config!("info"; fmt="[{level} | {name}]: {msg}")
+# push!(logger, DefaultHandler("deid_logfile.log"))
+
 
 include("de_identify.jl")
 include("utils.jl")

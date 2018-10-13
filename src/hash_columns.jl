@@ -93,6 +93,7 @@ dataframe, then all subsequent columns in other dataframes must have the same
 column name (i.e., `:ssn`).
 """
 function hash_all_columns!(df::DataFrames.DataFrame,
+                           logger::Memento.Logger,
                            hash_col_names::Array{Symbol, 1},
                            salt_col_names::Array{Symbol, 1},
                            id_cols::Array{Symbol, 1},
@@ -100,32 +101,40 @@ function hash_all_columns!(df::DataFrames.DataFrame,
                            salt_dict::Dict{String, Tuple{String, Symbol}})
 
     for col in hash_col_names
+        info(logger, "$(now()) Hashing column $col")
         hash_column!(df, col)
     end
 
     for col in salt_col_names
+        info(logger, "$(now()) Hashing and salting column $col")
         hash_column!(df, col, salt_dict)
     end
 
     for col in id_cols
         if !haskey(id_dicts, col)
+            info(logger, "$(now()) Creating Research ID lookup table for column $col")
             id_dicts[col] = Dict{String, Int}()
         end
 
         # Indicate that new column is just our Research ID column
-        new_name = Symbol(string("rid_", col))
+        info(logger, "$(now()) Overwriting hexdigest of column $col with Research ID")
         df[col] = rid_generation(df, col, id_dicts[col])
+        new_name = Symbol(string("rid_", col))
+
+        info(logger, "$(now()) Renaming $col to Research ID $new_name")
         rename!(df, (col => new_name))
     end
 end
 
 
 function hash_all_columns!(df::DataFrames.DataFrame,
+                           logger::Memento.Logger,
                            hash_col_names::Array{Symbol, 1},
                            id_cols::Array{Symbol, 1},
                            id_dicts::Dict{Symbol, Dict{String, Int}})
 
     for col in hash_col_names
+        info(logger, "$(now()) Hashing column $col")
         hash_column!(df, col)
     end
 
@@ -133,13 +142,16 @@ function hash_all_columns!(df::DataFrames.DataFrame,
     # to convert the hexdigest in to a non-ridiculous ID.
     for col in id_cols
         if !haskey(id_dicts, col)
+            info(logger, "$(now()) Creating Research ID lookup table for column $col")
             id_dicts[col] = Dict{String, Int}()
         end
 
+        info(logger, "$(now()) Overwriting hexdigest of column $col with Research ID")
         df[col] = rid_generation(df, col, id_dicts[col])
 
         # Indicate that new column is just our Research ID column
         new_name = Symbol(string("rid_", col))
+        info(logger, "$(now()) Renaming $col to Research ID $new_name")
         rename!(df, (col => new_name))
     end
 end

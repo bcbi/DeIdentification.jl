@@ -57,8 +57,18 @@ function dateshift_col!(df::DataFrames.DataFrame, date_col::Symbol, id_col, date
 end
 
 
-function dateshift_all_cols!(df, dateshift_cols, id_col, dateshift_dict, max_days = 30)
+function dateshift_all_cols!(df, logger, dateshift_cols, id_col, dateshift_dict, max_days = 30)
     for col in dateshift_cols
+        info(logger, "$(now()) Shifting dates for column $col")
         dateshift_col!(df, col, id_col, dateshift_dict, max_days)
     end
+end
+
+
+# HACK: This is a sub-optimal solution, but here we are. The function below
+# is used to set a global variable that is used by the date shifting functions.
+# This variable sets the max number of days that a given datetime can be shifted.
+function set_max_days!(n)
+    global MAX_DATESHIFT_DAYS = n
+    nothing
 end
