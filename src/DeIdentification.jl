@@ -19,6 +19,6 @@ include("de_identify.jl")
 include("utils.jl")
 include("date_shifting.jl")
 include("hash_columns.jl")
-
+include("exporting.jl")
 
 end # module

@@ -7,6 +7,7 @@ using Dates
 using YAML
 using Random
 using Memento
+using JSON
 
 
 data_dir = "/Users/pstey/projects_code/DeIdentification/data"
@@ -18,7 +19,7 @@ println(cfg)
 proj_config = DeIdConfig("../test/ehr_data.yml")
 
 deid = DeIdentified(proj_config)
-
+write(deid)
 
 
 

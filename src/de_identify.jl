@@ -14,6 +14,7 @@ end
 struct DeIdConfig
     project::String
     logfile::String
+    outdir::String
     seed::Int
     df_configs::Array{DfConfig,1}
     max_days::Int
@@ -24,7 +25,7 @@ function DeIdConfig(cfg_file::String)
     cfg = YAML.load(open(cfg_file))
     logfile = joinpath(cfg["log_path"], cfg["project"]*".log")
     num_dfs = length(cfg["datasets"])
-
+    outdir = cfg["output_path"]
     df_configs = Array{DfConfig,1}(undef, num_dfs)
 
     for i = 1:num_dfs
@@ -39,7 +40,7 @@ function DeIdConfig(cfg_file::String)
 
     seed = cfg["project_seed"]
     max_days = cfg["max_dateshift_days"]
-    return DeIdConfig(cfg["project"], logfile, seed, df_configs, max_days)
+    return DeIdConfig(cfg["project"], logfile, outdir, seed, df_configs, max_days)
 end
 
 
@@ -157,6 +158,7 @@ struct DeIdentified
     dateshift_dict::Dict{Int, Int}                    # unique ID and num days
     salt_dict::Dict{String, Tuple{String, Symbol}}    # cleartext, salt, column_name
     id_dicts::Dict{Symbol, Dict{String, Int}}
+    logger::Memento.Logger
     deid_config::DeIdConfig
 end
 
@@ -170,16 +172,6 @@ what salt was used on what cleartext. This is only necessary in the case of doin
 re-identification. The `id_dicts` argument is a dictionary containing other
 dictionaries that store the hash digest of original IDs to our new research IDs.
 """
-function DeIdentified()
-    res = DeIdentified(Array{DeIdDataFrame, 1}(),
-                       Dict{Int, Int}(),
-                       Dict{String, Tuple{String, Symbol}}(),
-                       deid_config::DeIdConfig)
-    return res
-end
-
-
-
 function DeIdentified(cfg::DeIdConfig)
     num_dfs = length(cfg.df_configs)
     deid_dfs = Array{DeIdDataFrame,1}(undef, num_dfs)
@@ -190,7 +182,7 @@ function DeIdentified(cfg::DeIdConfig)
 
     # Set up our top-level logger
     # root_logger = Memento.getlogger()
-    df_logger = Memento.getlogger("dataframe")
+    df_logger = Memento.getlogger("deidentify")
     logfile_roller = FileRoller(cfg.logfile)
     # push!(root_logger, DefaultHandler(logfile_roller))
     push!(df_logger, DefaultHandler(logfile_roller))
@@ -211,7 +203,7 @@ function DeIdentified(cfg::DeIdConfig)
                                     id_dicts = id_dicts,
                                     salt_dict = salt_dict)
     end
-    res = DeIdentified(deid_dfs, dateshift_dict, salt_dict, id_dicts, cfg)
+    res = DeIdentified(deid_dfs, dateshift_dict, salt_dict, id_dicts, df_logger, cfg)
     res
 end
 
