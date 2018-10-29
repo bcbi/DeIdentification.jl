@@ -1,4 +1,4 @@
-site_name:        DeIdenfication.jl
+site_name:        DeIdentification.jl
 site_author:      Paul Stey
 repo_url:         https://github.com/bcbi/deidentification.jl
 site_description: A Julia package for de-identifying data
