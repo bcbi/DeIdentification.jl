@@ -1,5 +1,5 @@
-module DeIdentificiation
-
+module DeIdentification
+     
 export DeIdentified, DeIdDataFrame, DeIdConfig, DfConfig
 
 import YAML
