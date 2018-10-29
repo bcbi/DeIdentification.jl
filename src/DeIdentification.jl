@@ -1,4 +1,4 @@
-module DeIdenficiation
+module DeIdentificiation
 
 export DeIdentified, DeIdDataFrame, DeIdConfig, DfConfig
 
