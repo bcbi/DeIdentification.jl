@@ -1,5 +1,5 @@
 using Documenter
-using DeIdenfication
+using DeIdentification
 
 makedocs()
 
