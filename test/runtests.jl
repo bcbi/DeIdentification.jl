@@ -1,4 +1,4 @@
-using DeIdentificiation
+using DeIdentification
 using DataFrames
 using CSV
 
