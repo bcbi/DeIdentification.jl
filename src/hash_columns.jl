@@ -9,6 +9,11 @@ linkages across data sets, it's nicer to have a numeric value rather than
 that the rows of the data frame have been shuffled, as we do in the
 `DeIdDataFrame()` construnctor. Otherwise, we risk potentially leaking some
 information related to the order of the observations in the dataframes.
+
+# Arguments
+- `df::DataFrame`: The de-identified dataframe
+- `col_name::Symbol`: The column containing the hash digest of the original ID
+- `id_dict::Dict`: Dictionary with hash digest => research ID mapping
 """
 function rid_generation(df, col_name::Symbol, id_dict::Dict{String, Int})
     n = nrow(df)
@@ -38,6 +43,11 @@ This function is used to salt and hash columns containing unique identifiers.
 Hashing is done in place using SHA256 and a 64-bit salt. Of note is that missing
 values are left missing. Also note that if `salt_dict` is passed, the method
 dispatched assumes we are hashing _and_ salting.
+
+# Arguments
+- `df::DataFrame`: The dataframe to be de-idenfied
+- `col_name::Symbol`: Name of column to de-idenfy
+- `salt_dict::Dict{String, Tuple{String, Symbol}}`: Dictionary where key is cleartext, and value is a Tuple with {salt, column name}
 """
 function hash_column!(df, col_name::Symbol, salt_dict::Dict{String, Tuple{String, Symbol}})
     n = nrow(df)
@@ -91,6 +101,15 @@ which we have generated research IDs. Also note that this approach presumes if
 we have a column (e.g., `:ssn`) for which we generate a research ID in one
 dataframe, then all subsequent columns in other dataframes must have the same
 column name (i.e., `:ssn`).
+
+# Arguments
+- `df::DataFrame`: Dataframe to be de-identified
+- `logger::Memento.Logger`: This is our logger that writes logs to disk
+- `hash_col_names::Array{Symbol,1}`: Array with names of columns to be hashed
+- `salt_col_names::Array{Symbol,1}`: Array with names of columns to be salted _and_ hashed
+- `id_cols::Array{Symbol,1}`: Array with names of columns to be turned in to research IDs
+- `id_dicts::Dict{Symbol, Dict{String, Int}}`: This is a dictionary of dictionaries. The keys of the outer dictionary are the column names of ID variables. The values of the outer dictionary are dictionaries themselves with key-values being hash digest IDs => research IDs.
+- `salt_dict::Dict{String, Tuple{String, Symbol}}`: Dictionary where key is cleartext, and value is a Tuple with {salt, column name}
 """
 function hash_all_columns!(df::DataFrames.DataFrame,
                            logger::Memento.Logger,
