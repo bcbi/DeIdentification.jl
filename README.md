@@ -8,7 +8,7 @@
 
 
 
-# Installation
+# 1. Installation
 ```julia
 Pkg.clone("https://github.com/bcbi/DeIdentification.jl.git")
 ```
