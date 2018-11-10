@@ -11,6 +11,7 @@ using JSON
 
 
 data_dir = "/Users/pstey/projects_code/DeIdentification/data"
+data_dir2 = "/Users/stephendove/Documents/Lifespan/edsn/DeIdentification/data"
 cd(data_dir)
 cfg = YAML.load(open("../test/ehr_data.yml"))
 println(cfg)
