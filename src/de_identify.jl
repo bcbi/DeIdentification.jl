@@ -183,9 +183,9 @@ function DeIdentified(cfg::DeIdConfig)
     # Set up our top-level logger
     # root_logger = Memento.getlogger()
     df_logger = Memento.getlogger("deidentify")
-    logfile_roller = FileRoller(cfg.logfile)
+    logfile_roller = Memento.FileRoller(cfg.logfile)
     # push!(root_logger, DefaultHandler(logfile_roller))
-    push!(df_logger, DefaultHandler(logfile_roller))
+    push!(df_logger, Memento.DefaultHandler(logfile_roller))
 
     info(df_logger, "$(now()) Logging session for project $(cfg.project)")
 
