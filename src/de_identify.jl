@@ -168,7 +168,7 @@ function DeIdentified(cfg::DeIdConfig)
         Memento.info(df_logger, "$(Dates.now()) Reading dataframe from $(dfc.filename)")
         df = CSV.read(dfc.filename)
 
-        rename!(df, dfs.rename_cols)
+        rename!(df, dfc.rename_cols)
 
         deid_dfs[i] = DeIdDataFrame(df,
                                     dfc,
