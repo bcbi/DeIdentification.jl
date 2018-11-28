@@ -16,5 +16,4 @@
 
     @test id_generation(df1, :id, id_dict) == [1, 2, 3, 4, 4, 5, 3]
     @test id_generation(df2, :id, id_dict) == [2, 5, 4, 1, 5]
-
 end
