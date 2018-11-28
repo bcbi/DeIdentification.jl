@@ -38,24 +38,23 @@ end
 
 
 """
-    hash_column!(df, col_name, salt_dict)
+    hash_salt_column!(df, col_name, salt_dict)
 This function is used to salt and hash columns containing unique identifiers.
 Hashing is done in place using SHA256 and a 64-bit salt. Of note is that missing
-values are left missing. Also note that if `salt_dict` is passed, the method
-dispatched assumes we are hashing _and_ salting.
+values are left missing.
 
 # Arguments
 - `df::DataFrame`: The dataframe to be de-idenfied
 - `col_name::Symbol`: Name of column to de-idenfy
 - `salt_dict::Dict{String, Tuple{String, Symbol}}`: Dictionary where key is cleartext, and value is a Tuple with {salt, column name}
 """
-function hash_column!(df, col_name::Symbol, salt_dict::Dict{String, Tuple{String, Symbol}})
+function hash_salt_column!(df, col_name::Symbol, salt_dict::Dict{String, Tuple{String, Symbol}})
     n = DataFrames.nrow(df)
-    res = Array{Union{String, Missing}, 1}(undef, n)
+    res = Array{Union{String, Missing}, 1}(missing, n)
 
     for i = 1:n
         if ismissing(df[i, col_name])
-            res[i] = missing
+            continue
         elseif haskey(salt_dict, df[i, col_name])
             cleartext = string(df[i, col_name])
             salt = salt_dict[cleartext]
@@ -72,10 +71,19 @@ function hash_column!(df, col_name::Symbol, salt_dict::Dict{String, Tuple{String
     nothing
 end
 
+"""
+    hash_column!(df, col_name, salt_dict)
+This function is used to hash columns containing identifiers.
+Hashing is done in place using SHA256 and a 64-bit salt. Of note is that missing
+values are left missing.
 
+# Arguments
+- `df::DataFrame`: The dataframe to be de-idenfied
+- `col_name::Symbol`: Name of column to de-idenfy
+"""
 function hash_column!(df, col_name::Symbol)
     n = DataFrames.nrow(df)
-    res = Array{Union{String, Missing}, 1}(undef, n)
+    res = Array{Union{String, Missing}, 1}(missing, n)
 
     for i = 1:n
         if ismissing(df[i, col_name])
@@ -126,7 +134,7 @@ function hash_all_columns!(df::DataFrames.DataFrame,
 
     for col in salt_col_names
         Memento.info(logger, "$(Dates.now()) Hashing and salting column $col")
-        hash_column!(df, col, salt_dict)
+        hash_salt_column!(df, col, salt_dict)
     end
 
     for col in id_cols
@@ -146,31 +154,8 @@ function hash_all_columns!(df::DataFrames.DataFrame,
 end
 
 
-function hash_all_columns!(df::DataFrames.DataFrame,
-                           logger::Memento.Logger,
-                           hash_col_names::Array{Symbol, 1},
-                           id_cols::Array{Symbol, 1},
-                           id_dicts::Dict{Symbol, Dict{String, Int}})
-
-    for col in hash_col_names
-        Memento.info(logger, "$(Dates.now()) Hashing column $col")
-        hash_column!(df, col)
-    end
-
-    # This next loop handles the ID columns for which we want
-    # to convert the hexdigest in to a non-ridiculous ID.
-    for col in id_cols
-        if !haskey(id_dicts, col)
-            Memento.info(logger, "$(Dates.now()) Creating Research ID lookup table for column $col")
-            id_dicts[col] = Dict{String, Int}()
-        end
-
-        Memento.info(logger, "$(Dates.now()) Overwriting hexdigest of column $col with Research ID")
-        df[col] = rid_generation(df, col, id_dicts[col])
-
-        # Indicate that new column is just our Research ID column
-        new_name = Symbol(string("rid_", col))
-        Memento.info(logger, "$(Dates.now()) Renaming $col to Research ID $new_name")
-        DataFrames.rename!(df, (col => new_name))
-    end
-end
+hash_all_columns!(df::DataFrames.DataFrame,
+                   logger::Memento.Logger,
+                   hash_col_names::Array{Symbol, 1},
+                   id_cols::Array{Symbol, 1},
+                   id_dicts::Dict{Symbol, Dict{String, Int}}) = hash_all_columns!(df, logger, hash_col_names, [], id_cols, id_dicts, Dict())
