@@ -6,14 +6,14 @@ project_seed: 42          # for reproducibility
 log_path: "../logs"
 
 datasets:
-    - pet_bdays:
-        - filename:        "../data/pet_birthdays.csv"
-        - hashed_cols:     ["id", "name"]
-        - salted_cols:     ["meds", "hometown"]
-        - date_shift_cols: ["bday"]
-    - pet_owners:
-        - filename:        "../data/pet_owners.csv"
-        - df_name:         "pet_owners"
-        - hashed_cols:     ["id", "name"]
-        - salted_cols:     ["ssn"]
-        - date_shift_cols: ["dob"]
+  - name: pet_bdays
+    filename:        "../data/pet_birthdays.csv"
+    hashed_cols:     ["id", "name"]
+    salted_cols:     ["meds", "hometown"]
+    date_shift_cols: ["bday"]
+  - name: pet_owners
+    filename:        "../data/pet_owners.csv"
+    df_name:         "pet_owners"
+    hashed_cols:     ["id", "name"]
+    salted_cols:     ["ssn"]
+    date_shift_cols: ["dob"]

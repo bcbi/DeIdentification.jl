@@ -94,7 +94,8 @@ end
 # HACK: This is a sub-optimal solution, but here we are. The function below
 # is used to set a global variable that is used by the date shifting functions.
 # This variable sets the max number of days that a given datetime can be shifted.
-function set_max_days!(n)
-    global MAX_DATESHIFT_DAYS = n
-    nothing
-end
+# function set_max_days!(n)
+#     global MAX_DATESHIFT_DAYS = n
+#     nothing
+# end
+# MCM - this function doesn't seem to be used anywhere

@@ -8,6 +8,7 @@ struct DfConfig
     salt_cols::Array{Symbol,1}
     dateshift_cols::Array{Symbol,1}
     drop_cols::Array{Symbol,1}
+    rename_cols::Dict{Symbol,Symbol}
 end
 
 
@@ -27,22 +28,27 @@ function DeIdConfig(cfg_file::String)
     num_dfs = length(cfg["datasets"])
     outdir = cfg["output_path"]
 
+    seed = cfg["project_seed"]
+    max_days = cfg["max_dateshift_days"]
+
     # initialize DataFrame Configs for data sets
     df_configs = Array{DfConfig,1}(undef, num_dfs)
 
     # populate DF Configs
-    for enumerate(i, ds) in cfg["datasets"] #i = 1:num_dfs
-        name = first(keys(ds))
-        filename = ds[name][1]["filename"]
-        hash_cols = map(Symbol, get(ds[name][2], "hash_cols", Array{String,1}()))
-        salt_cols = map(Symbol, get(ds[name][3], "salt_cols", Array{String,1}()))
-        dateshift_cols = map(Symbol,  get(ds[name][4], "dateshift_cols", Array{String,1}()))
-        drop_cols = map(Symbol,  get(ds[name][5], "drop_cols", Array{String,1}()))
-        df_configs[i] = DfConfig(name, filename, hash_cols, salt_cols, dateshift_cols, drop_cols)
+    for (i, ds) in enumerate(cfg["datasets"])
+        name = ds["name"]
+        filename = ds["filename"]
+        rename_dict = Dict{Symbol,Symbol}()
+        for pair in get(ds, "rename_cols", [])
+            rename_dict[Symbol(pair["in"])] = Symbol(pair["out"])
+        end
+        hash_cols = map(Symbol, get(ds, "hash_cols", Array{String,1}()))
+        salt_cols = map(Symbol, get(ds, "salt_cols", Array{String,1}()))
+        dateshift_cols = map(Symbol,  get(ds, "dateshift_cols", Array{String,1}()))
+        drop_cols = map(Symbol,  get(ds, "drop_cols", Array{String,1}()))
+        df_configs[i] = DfConfig(name, filename, hash_cols, salt_cols, dateshift_cols, drop_cols, rename_dict)
     end
 
-    seed = cfg["project_seed"]
-    max_days = cfg["max_dateshift_days"]
     return DeIdConfig(cfg["project"], logfile, outdir, seed, df_configs, max_days)
 end
 
@@ -155,12 +161,15 @@ function DeIdentified(cfg::DeIdConfig)
 
     Memento.info(df_logger, "$(Dates.now()) Logging session for project $(cfg.project)")
 
-    set_max_days!(cfg.max_days)    # Set global MAX_DATESHIFT_DAYS variable
-    Memento.info(df_logger, "MAX_DATESHIFT_DAYS is set to $MAX_DATESHIFT_DAYS")
+    # set_max_days!(cfg.max_days)    # Set global MAX_DATESHIFT_DAYS variable
+    # Memento.info(df_logger, "MAX_DATESHIFT_DAYS is set to $MAX_DATESHIFT_DAYS")
 
-    for enumerate(i, dfc) in cfg.df_configs
+    for (i, dfc) in enumerate(cfg.df_configs)
         Memento.info(df_logger, "$(Dates.now()) Reading dataframe from $(dfc.filename)")
         df = CSV.read(dfc.filename)
+
+        rename!(df, dfs.rename_cols)
+
         deid_dfs[i] = DeIdDataFrame(df,
                                     dfc,
                                     df_logger,
