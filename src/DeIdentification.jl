@@ -5,10 +5,10 @@ export DeIdentified, DeIdDataFrame, DeIdConfig, DfConfig
 import YAML
 import DataFrames
 import CSV
-import Dates: now
+import Dates
 import SHA: bytes2hex, sha256
 import Random: shuffle, randstring
-import Memento: info
+import Memento:
 
 
 # logger = Memento.config!("info"; fmt="[{level} | {name}]: {msg}")
