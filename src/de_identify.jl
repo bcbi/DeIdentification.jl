@@ -75,7 +75,7 @@ function DeIdDataFrame(df::DataFrames.DataFrame,
 
     # Here we shuffle the rows so that ID creation does not
     # preserve information about the individual records.
-    n = nrow(df_new)
+    n = DataFrames.DataFrames.nrow(df_new)
     Memento.info(logger, "$(Dates.now()) Shuffling $n rows")
     df_new = df_new[shuffle(1:n), :]
 
@@ -105,7 +105,7 @@ function DeIdDataFrame(df::DataFrames.DataFrame,
 
     # Here we shuffle the rows so that ID creation does not
     # preserve information about the individual records.
-    n = nrow(df_new)
+    n = DataFrames.nrow(df_new)
     Memento.info(logger, "$(Dates.now()) Shuffling $n rows")
     df_new = df_new[shuffle(1:n), :]
 
@@ -133,7 +133,7 @@ function DeIdDataFrame(df::DataFrames.DataFrame,
 
     # Here we shuffle the rows so that Research ID creation does
     # not preserve information about the individual records.
-    n = nrow(df_new)
+    n = DataFrames.nrow(df_new)
     Memento.info(logger, "$(Dates.now()) Shuffling $n rows")
     df_new = df_new[shuffle(1:n), :]
 
