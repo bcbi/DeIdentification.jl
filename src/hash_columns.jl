@@ -53,22 +53,21 @@ function hash_salt_column!(df, col_name::Symbol, salt_dict::Dict{String, Tuple{S
     res = Array{Union{String, Missing}, 1}(missing, n)
 
     for i = 1:n
-        if ismissing(df[i, col_name])
-            continue
-        elseif haskey(salt_dict, df[i, col_name])
-            cleartext = string(df[i, col_name])
+        ismissing(df[i, col_name]) && continue
+
+        cleartext = string(df[i, col_name])
+        if haskey(salt_dict, df[i, col_name])
             salt = salt_dict[cleartext]
-            res[i] = bytes2hex(sha256(string(cleartext, salt)))
         else
-            cleartext = string(df[i, col_name])
             salt = randstring(16)
             salt_dict[cleartext] = (salt, col_name)
-            res[i] = bytes2hex(sha256(string(cleartext, salt)))
         end
+
+        res[i] = bytes2hex(sha256(string(cleartext, salt)))
     end
 
     df[:, col_name] = res
-    nothing
+    return nothing
 end
 
 """
@@ -86,16 +85,14 @@ function hash_column!(df, col_name::Symbol)
     res = Array{Union{String, Missing}, 1}(missing, n)
 
     for i = 1:n
-        if ismissing(df[i, col_name])
-            continue
-        else
-            cleartext = string(df[i, col_name])
-            res[i] = bytes2hex(sha256(cleartext))
-        end
+        ismissing(df[i, col_name]) && continue
+
+        cleartext = string(df[i, col_name])
+        res[i] = bytes2hex(sha256(cleartext))
     end
 
     df[:, col_name] = res
-    nothing
+    return nothing
 end
 
 

@@ -24,5 +24,6 @@ function write(deid::DeIdentified)
     saltfile = joinpath(outdir, "salts.json")
     Memento.info(deid.logger, "$(Dates.now()) Writing salt values to $(saltfile)")
     write(saltfile, JSON.Writer.json(deid.salt_dict, 4))
-    nothing
+
+    return nothing
 end

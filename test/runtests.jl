@@ -1,13 +1,19 @@
 using DeIdentification
 using DataFrames
 using CSV
+using YAML
 
-using Base.Test
+using Test
 
-dx = CSV.read("../data/dx.csv")
-med = CSV.read("../data/med.csv")
-pat = CSV.read("../data/pat.csv")
+@testset "Config" begin
+    test_file = "ehr_data.yml"
 
+    cfg_raw = YAML.load_file(test_file)
 
+    # nominally check YAML loading worked
+    @test cfg_raw["project"] == "ehr"
 
-@test 1 == 1
+    cfg = DeIdConfig(test_file)
+
+    @test cfg_raw["project"] == cfg.project
+end
