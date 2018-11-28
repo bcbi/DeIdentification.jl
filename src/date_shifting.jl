@@ -47,7 +47,7 @@ same `n_days`.
 - `max_days::Int`: The maximum number of days (positive or negative) that a date could be shifted
 """
 function dateshift_col!(df::DataFrames.DataFrame, date_col::Symbol, id_col::Symbol, dateshift_dict::Dict, max_days::Int = 30)
-    n = nrow(df)
+    n = DataFrames.nrow(df)
     for i = 1:n
         id = df[i, id_col]        # Note, this is the processed "Research ID"
         if ismissing(id) || ismissing(df[i, date_col])
