@@ -8,7 +8,7 @@ import CSV
 import Dates
 import SHA: bytes2hex, sha256
 import Random: shuffle, randstring
-import Memento:
+import Memento
 
 
 # logger = Memento.config!("info"; fmt="[{level} | {name}]: {msg}")
