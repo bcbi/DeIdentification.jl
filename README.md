@@ -1,8 +1,8 @@
 # DeIdentification.jl
 
-[![Build Status](https://travis-ci.org/bcbi/DeIdentificiation.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentificiation.jl)
+[![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl)
 
-[![codecov.io](http://codecov.io/github/bcbi/DeIdentificiation.jl/coverage.svg?branch=master)](http://codecov.io/github/bcbi/DeIdentificiation.jl?branch=master)
+[![codecov.io](http://codecov.io/github/bcbi/DeIdentification.jl/coverage.svg?branch=master)](http://codecov.io/github/bcbi/DeIdentification.jl?branch=master)
 
 
 
