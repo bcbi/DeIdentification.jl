@@ -1,5 +1,5 @@
 module DeIdentification
-     
+
 export DeIdentified, DeIdDataFrame, DeIdConfig, DfConfig
 
 import YAML
@@ -7,7 +7,7 @@ import DataFrames
 import CSV
 import Dates
 import SHA: bytes2hex, sha256
-import Random: shuffle
+import Random: shuffle, randstring
 import Memento
 
 
