@@ -76,11 +76,11 @@ function DeIdDataFrame(df::DataFrames.DataFrame,
     # Here we shuffle the rows so that ID creation does not
     # preserve information about the individual records.
     n = nrow(df_new)
-    info(logger, "$(now()) Shuffling $n rows")
+    info(logger, "$(Dates.now()) Shuffling $n rows")
     df_new = df_new[shuffle(1:n), :]
 
     for col in drop_cols
-        info(logger, "$(now()) Dropping column $col")
+        info(logger, "$(Dates.now()) Dropping column $col")
         delete!(df_new, col)
     end
 
@@ -106,7 +106,7 @@ function DeIdDataFrame(df::DataFrames.DataFrame,
     # Here we shuffle the rows so that ID creation does not
     # preserve information about the individual records.
     n = nrow(df_new)
-    info(logger, "$(now()) Shuffling $n rows")
+    info(logger, "$(Dates.now()) Shuffling $n rows")
     df_new = df_new[shuffle(1:n), :]
 
     hash_all_columns!(df_new, logger, hash_cols, id_cols, id_dicts)
@@ -134,11 +134,11 @@ function DeIdDataFrame(df::DataFrames.DataFrame,
     # Here we shuffle the rows so that Research ID creation does
     # not preserve information about the individual records.
     n = nrow(df_new)
-    info(logger, "$(now()) Shuffling $n rows")
+    info(logger, "$(Dates.now()) Shuffling $n rows")
     df_new = df_new[shuffle(1:n), :]
 
     for col in cfg.drop_cols
-        info(logger, "$(now()) Dropping column $col")
+        info(logger, "$(Dates.now()) Dropping column $col")
         delete!(df_new, col)
     end
 
@@ -187,13 +187,13 @@ function DeIdentified(cfg::DeIdConfig)
     # push!(root_logger, DefaultHandler(logfile_roller))
     push!(df_logger, Memento.DefaultHandler(logfile_roller))
 
-    info(df_logger, "$(now()) Logging session for project $(cfg.project)")
+    info(df_logger, "$(Dates.now()) Logging session for project $(cfg.project)")
 
     set_max_days!(cfg.max_days)    # Set global MAX_DATESHIFT_DAYS variable
     info(df_logger, "MAX_DATESHIFT_DAYS is set to $MAX_DATESHIFT_DAYS")
 
     for i = 1:num_dfs
-        info(df_logger, "$(now()) Reading dataframe from $(cfg.df_configs[i].filename)")
+        info(df_logger, "$(Dates.now()) Reading dataframe from $(cfg.df_configs[i].filename)")
         df = CSV.read(cfg.df_configs[i].filename)
         deid_dfs[i] = DeIdDataFrame(df,
                                     cfg.df_configs[i],
