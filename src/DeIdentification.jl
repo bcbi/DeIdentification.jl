@@ -3,6 +3,7 @@ module DeIdentification
 export DeIdentified, DeIdDataFrame, DeIdConfig, DfConfig
 
 import YAML
+import JSON
 import DataFrames
 import CSV
 import Dates
