@@ -21,11 +21,30 @@ end
 # end
 
 
-# DateTime(dat[1,2], "yy/mm/dd H:M") + Dates.Day(2)
+# begin
+#     df1 = DataFrames.DataFrame(id = [4, 6, 7, 3, 3, 5, 7],
+#                                x1 = rand(7),
+#                                x2 = ["cat", "dog", "dog", "fish", "bird", "cat", "dog"],
+#                                x3 = ["2018-02-22", "2018-05-11", "2018-09-20",       "2014-03-12", "2011-11-25", "2001-05-31", "1990-04-27"])
+#
+#     show(df1)
+#     # Dates.DateTime(df1[1, :x3], "yy-mm-dd H:M") + Dates.Day(2)
+#
+#     function shift_datetime!(dt::Dates.DateTime, n_days::Int)
+#         println(dt)
+#         dt += Dates.Day(n_days)
+#         println(dt)
+#     end
+#
+#     shift_datetime!(Dates.DateTime(df1[3, :x3], "yy-mm-dd H:M"), 999)
+#     show(df1)
+# end
+
 
 function shift_datetime!(dt::Dates.DateTime, n_days::Int)
     dt += Dates.Day(n_days)
 end
+
 
 function shift_datetime!(dt::Dates.Date, n_days::Int)
     dt += Dates.Day(n_days)
@@ -55,7 +74,7 @@ function dateshift_col!(df::DataFrames.DataFrame, date_col::Symbol, id_col::Symb
         else
             if haskey(dateshift_dict, id)
                 n_days = dateshift_dict[id]
-                shift_datetime!(df[i, date_col], n_days)
+                df[i, date_col] = df[i, date_col] + n_days
             else
                 update_dateshift_dict!(dateshift_dict, id, max_days)
             end
