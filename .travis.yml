@@ -7,26 +7,26 @@ os:
 
 julia:
   - 0.7
-
+  - 1.0
 
 notifications:
   email: false
 
-git:
-  depth: 99999999
-
-before_install:
-  - if [ `uname` = "Linux" ]; then
-      sudo apt-get -qq update;
-      sudo apt-get install -y ncbi-blast+;
-    elif [ `uname` = "Darwin" ]; then
-      curl https://repo.continuum.io/miniconda/Miniconda3-4.5.11-MacOSX-x86_64.sh > ~/miniconda.sh;
-      bash ~/miniconda.sh -b -p $HOME/miniconda;
-      export PATH="$HOME/miniconda/bin:$PATH";
-      conda install blast -y -f -c bioconda;
-    fi
-before_script:
-  - export PATH=$HOME/.local/bin:$PATH
+# git:
+#   depth: 99999999
+#
+# before_install:
+#   - if [ `uname` = "Linux" ]; then
+#       sudo apt-get -qq update;
+#       sudo apt-get install -y ncbi-blast+;
+#     elif [ `uname` = "Darwin" ]; then
+#       curl https://repo.continuum.io/miniconda/Miniconda3-4.5.11-MacOSX-x86_64.sh > ~/miniconda.sh;
+#       bash ~/miniconda.sh -b -p $HOME/miniconda;
+#       export PATH="$HOME/miniconda/bin:$PATH";
+#       conda install blast -y -f -c bioconda;
+#     fi
+# before_script:
+#   - export PATH=$HOME/.local/bin:$PATH
 after_success:
   - julia -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
 
@@ -35,6 +35,6 @@ jobs:
     - stage: deploy docs
       language: julia
       os: linux
-      julia: 0.7
+      julia: 1.0
       script:
         - julia -e 'import Pkg; Pkg.instantiate(); Pkg.add("Documenter"); include(joinpath("docs", "make.jl"))'
