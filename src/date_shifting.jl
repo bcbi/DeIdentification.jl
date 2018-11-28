@@ -66,7 +66,7 @@ end
 
 function dateshift_all_cols!(df, logger, dateshift_cols, id_col, dateshift_dict, max_days = 30)
     for col in dateshift_cols
-        info(logger, "$(Dates.now()) Shifting dates for column $col")
+        Memento.info(logger, "$(Dates.now()) Shifting dates for column $col")
         dateshift_col!(df, col, id_col, dateshift_dict, max_days)
     end
 end
