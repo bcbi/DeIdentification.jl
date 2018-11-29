@@ -189,21 +189,16 @@ function DeIdentified(cfg::DeIdConfig)
     return DeIdentified(deid_dfs, dateshift_dict, salt_dict, id_dicts, df_logger, cfg)
 end
 
-
-
 """
-    add_dataframe!(de_id, df, hash_cols, salt_cols, dateshift_cols)
+    deidentify(config_path)
 
-This function adds a dataframe to a `DeIdentified` struct. It works one dataframe
-at a time. It is important to note that this function modifies the `deidentified`
-and the `salt_dict` objects.
+Run entire pipelint: Processes configuration YAML file, de-identifies the data,
+and writes the data to disk.  Returns the DeIdentified object.
 """
-function add_dataframe!(deid::DeIdentified, df::DataFrames.DataFrame, hash_cols, salt_cols, dateshift_cols)
-    if df ∈ map(x -> x.df, deid.df_array)
-        error("This dataframe is already incorporated in this DeIdentified object.")
-    else
-        df_deid = DeIdDataFrame(df, hash_cols, salt_cols, dateshift_cols, deid.dateshift_dict, deid.salt)
+function deidentify(cfg_file::String)
+    proj_config = DeIdConfig(cfg_file)
+    deid = DeIdentified(proj_config)
+    DeIdentification.write(deid)
 
-        push!(deid.df_array, df_deid)
-    end
+    return deid
 end
