@@ -8,7 +8,7 @@ import DataFrames
 import CSV
 import Dates
 import SHA: bytes2hex, sha256
-import Random: shuffle, randstring
+import Random: shuffle, randstring, seed!
 import Memento
 
 
@@ -17,7 +17,6 @@ import Memento
 
 
 include("de_identify.jl")
-include("utils.jl")
 include("date_shifting.jl")
 include("hash_columns.jl")
 include("exporting.jl")

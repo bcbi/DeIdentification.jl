@@ -19,6 +19,7 @@ struct DeIdConfig
     seed::Int
     df_configs::Array{DfConfig,1}
     max_days::Int
+    primary_id::Symbol
 end
 
 
@@ -27,6 +28,7 @@ function DeIdConfig(cfg_file::String)
     logfile = joinpath(cfg["log_path"], cfg["project"]*".log")
     num_dfs = length(cfg["datasets"])
     outdir = cfg["output_path"]
+    pk = Symbol(cfg["primary_id"])
 
     seed = cfg["project_seed"]
     max_days = cfg["max_dateshift_days"]
@@ -49,7 +51,7 @@ function DeIdConfig(cfg_file::String)
         df_configs[i] = DfConfig(name, filename, hash_cols, salt_cols, dateshift_cols, drop_cols, rename_dict)
     end
 
-    return DeIdConfig(cfg["project"], logfile, outdir, seed, df_configs, max_days)
+    return DeIdConfig(cfg["project"], logfile, outdir, seed, df_configs, max_days, pk)
 end
 
 
@@ -61,25 +63,25 @@ struct DeIdDataFrame
 end
 
 """
-    DeIdDataFrame(df, hash_cols, salt_cols, dateshift_cols, drop_cols, dateshift_dict, id_cols, id_dicts, salt)
+    DeIdDataFrame(df, hash_cols, salt_cols, dateshift_cols, drop_cols, dateshift_dict, id_col, id_dicts, salt)
 
 This is the constructor for our DeIdDataFrame objects. Note that the first entry
-in the `id_cols` is what we use for our lookup in the date-shift dictionary. Also
+in the `id_col` is the primary identifier for the dataset and what we use for our lookup in the date-shift dictionary. Also
 note that the `dateshift_dict` object stores the Research IDs as the keys, and
 number of days that the participant (for example) ought to have their dates shifted.
 The `id_dicts` argument is a dictionary containing other dictionaries that store
 the hash digest of original IDs to our new research IDs.
 """
 function DeIdDataFrame(df::DataFrames.DataFrame,
-                       logger::Memento.Logger;
+                       logger::Memento.Logger,
                        hash_cols::Array{Symbol, 1},
                        salt_cols::Array{Symbol, 1},
                        dateshift_cols::Array{Symbol, 1},
                        drop_cols::Array{Symbol, 1},
                        dateshift_dict::Dict{Int, Int},
-                       id_cols::Array{Symbol, 1},
+                       id_col::Symbol,
                        id_dicts::Dict{Symbol, Dict{String, Int}},
-                       salt_dict::Dict{String, Tuple{String, Symbol}})
+                       salt_dict::Dict{Any, String})
     df_new = copy(df)
 
     # Here we shuffle the rows so that ID creation does not
@@ -93,9 +95,9 @@ function DeIdDataFrame(df::DataFrames.DataFrame,
         delete!(df_new, col)
     end
 
-    hash_all_columns!(df_new, logger, hash_cols, salt_cols, id_cols, id_dicts, salt_dict)
+    hash_all_columns!(df_new, logger, hash_cols, salt_cols, id_col, id_dicts, salt_dict)
 
-    dateshift_id = Symbol(string("rid_", id_cols[1]))
+    dateshift_id = Symbol(string("rid_", id_col))
     dateshift_all_cols!(df_new, logger, dateshift_cols, dateshift_id, dateshift_dict)
 
     return DeIdDataFrame(df_new, hash_cols, salt_cols, dateshift_cols)
@@ -103,12 +105,12 @@ end
 
 
 DeIdDataFrame(df::DataFrames.DataFrame,
-               logger::Memento.Logger;
+               logger::Memento.Logger,
                hash_cols::Array{Symbol, 1},
                dateshift_cols::Array{Symbol, 1},
                dateshift_dict::Dict{Int, Int},
-               id_cols::Array{Symbol, 1},
-               id_dicts::Dict{Symbol, Dict{String, Int}}) = DeIdDataFrame(df, logger, hash_cols, [], dateshift_cols, [], dateshift_dict, id_cols, id_dicts, Dict())
+               id_col::Symbol,
+               id_dicts::Dict{Symbol, Dict{String, Int}}) = DeIdDataFrame(df, logger, hash_cols, [], dateshift_cols, [], dateshift_dict, id_col, id_dicts, Dict())
 
 
 
@@ -116,19 +118,19 @@ DeIdDataFrame(df::DataFrames.DataFrame,
 # that defines the set of columns to be hashed, salted, and date shifted.
 DeIdDataFrame(df::DataFrames.DataFrame,
                cfg::DfConfig,
-               logger::Memento.Logger;
+               logger::Memento.Logger,
                dateshift_dict::Dict{Int, Int},
-               id_cols::Array{Symbol, 1},
+               id_col::Symbol,
                id_dicts::Dict{Symbol, Dict{String, Int}},
-               salt_dict::Dict{String, Tuple{String, Symbol}}) = DeIdDataFrame(df, logger, cfg.hash_cols, cfg.salt_cols, cfg.dateshift_cols, cfg.drop_cols, dateshift_dict, id_cols, id_dicts, salt_dict)
+               salt_dict::Dict{Any, String}) = DeIdDataFrame(df, logger, cfg.hash_cols, cfg.salt_cols, cfg.dateshift_cols, cfg.drop_cols, dateshift_dict, id_col, id_dicts, salt_dict)
 
 
 
 
 struct DeIdentified
     df_array::Array{DeIdDataFrame, 1}
-    dateshift_dict::Dict{Int, Int}                    # unique ID and num days
-    salt_dict::Dict{String, Tuple{String, Symbol}}    # cleartext, salt, column_name
+    dateshift_dict::Dict{Int, Int}      # unique ID and num days
+    salt_dict::Dict{Any, String}        # primary_identifier, salt
     id_dicts::Dict{Symbol, Dict{String, Int}}
     logger::Memento.Logger
     deid_config::DeIdConfig
@@ -148,7 +150,7 @@ function DeIdentified(cfg::DeIdConfig)
     num_dfs = length(cfg.df_configs)
     deid_dfs = Array{DeIdDataFrame,1}(undef, num_dfs)
     id_dicts = Dict{Symbol,Dict{String,Int}}()
-    salt_dict = Dict{String, Tuple{String, Symbol}}()
+    salt_dict = Dict{Any, String}()
     dateshift_dict = Dict{Int, Int}()
 
 
@@ -161,6 +163,9 @@ function DeIdentified(cfg::DeIdConfig)
 
     Memento.info(df_logger, "$(Dates.now()) Logging session for project $(cfg.project)")
 
+    Memento.info(df_logger, "$(Dates.now()) Setting seed for project $(cfg.project)")
+    seed!(cfg.seed)
+
     # set_max_days!(cfg.max_days)    # Set global MAX_DATESHIFT_DAYS variable
     # Memento.info(df_logger, "MAX_DATESHIFT_DAYS is set to $MAX_DATESHIFT_DAYS")
 
@@ -168,15 +173,17 @@ function DeIdentified(cfg::DeIdConfig)
         Memento.info(df_logger, "$(Dates.now()) Reading dataframe from $(dfc.filename)")
         df = CSV.read(dfc.filename)
 
-        rename!(df, dfc.rename_cols)
+        DataFrames.rename!(df, dfc.rename_cols)
+
+        @assert cfg.primary_id in getfield(getfield(df, :colindex), :names)
 
         deid_dfs[i] = DeIdDataFrame(df,
                                     dfc,
                                     df_logger,
-                                    dateshift_dict = dateshift_dict,
-                                    id_cols = dfc.hash_cols,
-                                    id_dicts = id_dicts,
-                                    salt_dict = salt_dict)
+                                    dateshift_dict,
+                                    cfg.primary_id,
+                                    id_dicts,
+                                    salt_dict)
     end
 
     return DeIdentified(deid_dfs, dateshift_dict, salt_dict, id_dicts, df_logger, cfg)
