@@ -1,16 +1,14 @@
 # DeIdentification.jl
 
-[![Build Status](https://travis-ci.org/paulstey/DeIdentficiation.jl.svg?branch=master)](https://travis-ci.org/paulstey/DeIdentficiation.jl)
+[![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl)
 
-[![Coverage Status](https://coveralls.io/repos/paulstey/DeIdentficiation.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/paulstey/DeIdentficiation.jl?branch=master)
-
-[![codecov.io](http://codecov.io/github/paulstey/DeIdentficiation.jl/coverage.svg?branch=master)](http://codecov.io/github/paulstey/DeIdentficiation.jl?branch=master)
+[![codecov.io](http://codecov.io/github/bcbi/DeIdentification.jl/coverage.svg?branch=master)](http://codecov.io/github/bcbi/DeIdentification.jl?branch=master)
 
 
 
 # 1. Installation
 ```julia
-Pkg.clone("https://github.com/bcbi/DeIdentification.jl.git")
+Pkg.add("https://github.com/bcbi/DeIdentification.jl.git")
 ```
 
 <!-- # Important Notes
