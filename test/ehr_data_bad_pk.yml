@@ -5,7 +5,7 @@ max_dateshift_days:     30
 output_path:            "./output"
 
 # The primary ID must be present in all data sets, so that dateshifting and salting works appropriately
-primary_id: "CSN"
+primary_id: "XXX"
 
 datasets:
   - name: dx
