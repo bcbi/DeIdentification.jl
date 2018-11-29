@@ -1,11 +1,16 @@
 using Documenter
 using DeIdentification
 
-makedocs(sitename="DeIdentification.jl")
+makedocs(
+    modules = [ DeIdentification ],
+    sitename = "DeIdentification.jl",
+    debug = true,
+    pages = [
+        "Home" => "index.md",
+        "Manual" => "documentation.md"
+        ]
+    )
 
 deploydocs(
-    deps   = Deps.pip("mkdocs==0.17.5", "mkdocs-material==2.9.4"),
-    repo = "github.com/bcbi/DeIdentification.jl.git",
-    julia  = "0.7",
-    osname = "linux"
+    repo = "github.com/bcbi/DeIdentification.jl.git"
 )
