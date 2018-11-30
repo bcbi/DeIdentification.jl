@@ -2,3 +2,4 @@ logs/
 output/
 *.*~
 Manifest.toml
+docs/build/

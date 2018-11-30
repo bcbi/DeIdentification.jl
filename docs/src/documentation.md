@@ -1,1 +1,5 @@
-# 1. DeIdentification.jl
+# DeIdentification.jl Reference
+
+```@autodocs
+Modules = [DeIdentification]
+```

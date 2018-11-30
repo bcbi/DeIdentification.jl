@@ -1,5 +1,7 @@
 # DeIdentification.jl
 
+[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://bcbi.github.io/DeIdentification.jl/latest)
+
 [![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl)
 
 [![codecov.io](http://codecov.io/github/bcbi/DeIdentification.jl/coverage.svg?branch=master)](http://codecov.io/github/bcbi/DeIdentification.jl?branch=master)
