@@ -13,7 +13,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "DeIdentification.jl",
     "category": "section",
-    "text": "A Julia package for de-identifying CSV data sets.Quick Notes:Compatible with julia 0.7 and 1.0\nIn your directory make sure to have the following sub-directories:\nlogs\noutput\nAll of the CSVs to be de-identified must contain a common identifier for the unit of analysis (e.g. patient ID)\nA config YAML file is required to run the pipeline"
+    "text": "A Julia package for de-identifying CSV data sets.pages = [\n    \"Guide\" => \"usage.md\",\n    \"API\" => \"documentation.md\"\n    ]"
+},
+
+{
+    "location": "#Quick-Notes:-1",
+    "page": "Home",
+    "title": "Quick Notes:",
+    "category": "section",
+    "text": "Compatible with julia 0.7 and 1.0\nIn your directory make sure to have the following sub-directories:\nlogs\noutput\nAll of the CSVs to be de-identified must contain a common identifier for the unit of analysis (e.g. patient ID)\nA config YAML file is required to run the pipeline"
 },
 
 {
@@ -45,7 +53,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Guide",
     "title": "Config YAML",
     "category": "section",
-    "text": "To indicate how to de-identify the data, where the data lives, and other variables a configuration YAML file must be created by the user.project:                <project name> # required\nproject_seed:           <int>          # optional, but required for reproducibility\nlog_path:               <dir path>     # required, must already be created\nmax_dateshift_days:     <int>          # optional, default is 30\noutput_path:            <dir path>     # required, must already be created\n\n# The primary ID must be present in all data sets, so that dateshifting and salting works appropriately\nprimary_id: <column name>       # required\n\n# 1 to n datasets must be present to de-identify\ndatasets:\n  - name: <dataset name 1>          # required, used to name output file\n    filename: <file path>         # required, path for input CSV\n    rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing\n      - in: <col name 1a>                # required, current column name\n        out: <col name 1b>               # required, future column name\n      - in: <col name 2a>                # required, current column name\n        out: <col name 2b>               # required, future column name\n    hash_cols:                    # optional, columns to be hashed\n      - <col name 1>\n      - <col name 2>\n    dateshift_cols:               # optional, columns to be dateshifted\n      - <col name 1>\n      - <col name 2>\n    salt_cols:                    # optional, columns to be hashed and salted\n      - <col name 1>\n      - <col name 2>\n    drop_cols:                    # optional, columns to be excluded from the de-identified data set\n      - <col name 1>\n      - <col name 2>\n  - name: <dataset name 2>          # required, used to name output file\n    filename: <file path>         # required, path for input CSV\n    rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing\n      - in: <col name 1a>                # required, current column name\n        out: <col name 1b>               # required, future column name\n      - in: <col name 2a>                # required, current column name\n        out: <col name 2b>               # required, future column name\n    hash_cols:                    # optional, columns to be hashed\n      - <col name 1>\n      - <col name 2>\n    dateshift_cols:               # optional, columns to be dateshifted\n      - <col name 1>\n      - <col name 2>\n    salt_cols:                    # optional, columns to be hashed and salted\n      - <col name 1>\n      - <col name 2>\n    drop_cols:                    # optional, columns to be excluded from the de-identified data set\n      - <col name 1>\n      - <col name 2>"
+    "text": "To indicate how to de-identify the data, where the data lives, and other variables a configuration YAML file must be created by the user.# config.yml\nproject:                <project name> # required\nproject_seed:           <int>          # optional, but required for reproducibility\nlog_path:               <dir path>     # required, must already be created\nmax_dateshift_days:     <int>          # optional, default is 30\noutput_path:            <dir path>     # required, must already be created\n\n# The primary ID must be present in all data sets, so that date shifting and salting work appropriately\nprimary_id: <column name>       # required\n\n# 1 to n datasets must be present to de-identify\ndatasets:\n  - name: <dataset name 1>          # required, used to name output file\n    filename: <file path>         # required, path for input CSV\n    rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing\n      - in: <col name 1a>                # required, current column name\n        out: <col name 1b>               # required, future column name\n    hash_cols:                    # optional, columns to be hashed\n      - <col name 1>\n      - <col name 2>\n    dateshift_cols:               # optional, columns to be dateshifted\n      - <col name 1>\n      - <col name 2>\n    salt_cols:                    # optional, columns to be hashed and salted\n      - <col name 1>\n      - <col name 2>\n    drop_cols:                    # optional, columns to be excluded from the de-identified data set\n      - <col name 1>\n      - <col name 2>\n  - name: <dataset name 2>          # required, used to name output file\n    filename: <file path>         # required, path for input CSV\n    rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing\n      - in: <col name 1a>                # required, current column name\n        out: <col name 1b>               # required, future column name\n    hash_cols:                    # optional, columns to be hashed\n      - <col name 1>\n      - <col name 2>\n    dateshift_cols:               # optional, columns to be dateshifted\n      - <col name 1>\n      - <col name 2>\n    salt_cols:                    # optional, columns to be hashed and salted\n      - <col name 1>\n      - <col name 2>\n    drop_cols:                    # optional, columns to be excluded from the de-identified data set\n      - <col name 1>\n      - <col name 2>"
 },
 
 {
@@ -61,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Guide",
     "title": "Running the Pipeline",
     "category": "section",
-    "text": "To de-identify a data set, pass the config YAML to the deidentify function.deidentify(\"./config.YML\")This will read in the data, de-identify the data, write a log to file, and write the resulting data set to file.The pipeline consists of three main steps:Read the configuration file and process the settings\nDe-identify the data set\nWrite the de-identified data to filesThe deidentify function runs these three steps as so:proj_config = DeIdConfig(cfg_file)\ndeid = DeIdentified(proj_config)\nDeIdentification.write(deid)"
+    "text": "To de-identify a data set, pass the config YAML to the deidentify function.deidentify(\"./config.yml\")This will read in the data, de-identify the data, write a log to file, and write the resulting data set to file.The pipeline consists of three main steps:Read the configuration file and process the settings\nDe-identify the data set\nWrite the de-identified data to filesThe deidentify function runs the three steps:proj_config = DeIdConfig(cfg_file)\ndeid = DeIdentified(proj_config)\nDeIdentification.write(deid)"
 },
 
 {
@@ -77,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "API",
     "title": "DeIdentification.DeIdDataFrame",
     "category": "method",
-    "text": "DeIdDataFrame(df, hash_cols, salt_cols, dateshift_cols, drop_cols, dateshift_dict, id_col, id_dicts, salt)\n\nThis is the constructor for our DeIdDataFrame objects. Note that the first entry in the id_col is the primary identifier for the dataset and what we use for our lookup in the date-shift dictionary. Also note that the dateshift_dict object stores the Research IDs as the keys, and number of days that the participant (for example) ought to have their dates shifted. The id_dicts argument is a dictionary containing other dictionaries that store the hash digest of original IDs to our new research IDs.\n\n\n\n\n\n"
+    "text": "DeIdDataFrame(df, hash_cols, salt_cols, dateshift_cols, drop_cols, dateshift_dict, id_col, id_dicts, salt)\n\nThis is the constructor for our DeIdDataFrame objects. Note that the id_col is the primary identifier for the dataset and what we use for our lookup in the date-shift dictionary. Also note that the dateshift_dict object stores the Research IDs as the keys, and number of days that the participant (for example) ought to have their dates shifted. The id_dicts argument is a dictionary containing the hash digest of original IDs to our new research IDs.\n\n\n\n\n\n"
 },
 
 {
@@ -85,7 +93,7 @@ var documenterSearchIndex = {"docs": [
     "page": "API",
     "title": "DeIdentification.DeIdentified",
     "category": "method",
-    "text": "DeIdentified(cfg)\n\nThis is the constructor for the DeIdentified struct. We use this type to store arrays of DeIdDataFrame variables, while also keeping a common salt_dict and dateshift_dict between DeIdDataFrames. The salt_dict allows us to track what salt was used on what cleartext. This is only necessary in the case of doing re-identification. The id_dicts argument is a dictionary containing other dictionaries that store the hash digest of original IDs to our new research IDs.\n\n\n\n\n\n"
+    "text": "DeIdentified(cfg)\n\nThis is the constructor for the DeIdentified struct. We use this type to store arrays of DeIdDataFrame variables, while also keeping a common salt_dict and dateshift_dict between DeIdDataFrames. The salt_dict allows us to track what salt was used on what cleartext. This is only necessary in the case of doing re-identification. The id_dicts argument is a dictionary containing other dictionaries that store the hash digest of the original primary IDs to our new research IDs.\n\n\n\n\n\n"
 },
 
 {
@@ -97,11 +105,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "documentation/#Base.write-Tuple{DeIdentified}",
+    "page": "API",
+    "title": "Base.write",
+    "category": "method",
+    "text": "write(deid)\n\nWrites DeIdentified structure to file. The datasets are outputted as CSVs, the dictionaries are written to josn. The files are written to the  output_path specified in the configuration YAML. \n\n\n\n\n\n"
+},
+
+{
     "location": "documentation/#DeIdentification.dateshift_col!",
     "page": "API",
     "title": "DeIdentification.dateshift_col!",
     "category": "function",
-    "text": "dateshift_col!(df, date_col, id_col, dateshift_dict)\n\nThis function is used internally by dateshiftallcols!(). We require that date shifting is done at the patient level. Thus, we pass the id_col to ensure that for a given patient, all their encounter data are shifted by the same n_days.\n\nArguments\n\ndf::DataFrame: The dataframe with the column to be date shifted\ndate_col::Symbol: Column with dates to be shifted\nid_col::Symbol: Column with ID (e.g., patient ID) to find dateshift value for this observation\ndateshift_dict::Dict: Dictionary where keys are ID (e.g., patient ID) and values are integers by which to shift the date (i.e., a number of days)\nmax_days::Int: The maximum number of days (positive or negative) that a date could be shifted\n\n\n\n\n\n"
+    "text": "dateshift_col!(df, date_col, id_col, dateshift_dict)\n\nThis function is used internally by dateshift_all_cols!(). We require that date shifting is done at the patient level. Thus, we pass the id_col to ensure that for a given patient, all their encounter data are shifted by the same n_days.\n\nArguments\n\ndf::DataFrame: The dataframe with the column to be date shifted\ndate_col::Symbol: Column with dates to be shifted\nid_col::Symbol: Column with ID (e.g., patient ID) to find dateshift value for this observation\ndateshift_dict::Dict: Dictionary where keys are ID (e.g., patient ID) and values are integers by which to shift the date (i.e., a number of days)\nmax_days::Int: The maximum number of days (positive or negative) that a date could be shifted\n\n\n\n\n\n"
 },
 
 {
