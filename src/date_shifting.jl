@@ -3,12 +3,13 @@ import DataFrames
 function update_dateshift_dict!(dateshift_dict, id, max_days)
     n_days = rand(-max_days:max_days)
     dateshift_dict[id] = n_days
-    nothing
+    
+    return nothing
 end
 
 """
     dateshift_col!(df, date_col, id_col, dateshift_dict)
-This function is used internally by dateshift_all_cols!(). We require that
+This function is used internally by `dateshift_all_cols!()`. We require that
 date shifting is done at the patient level. Thus, we pass the `id_col` to
 ensure that for a given patient, all their encounter data are shifted by the
 same `n_days`.
@@ -32,6 +33,8 @@ function dateshift_col!(df::DataFrames.DataFrame, date_col::Symbol, id_col::Symb
         n_days = dateshift_dict[id]
         df[i, date_col] = df[i, date_col] + Dates.Day(n_days)
     end
+
+    return nothing
 end
 
 
@@ -40,4 +43,6 @@ function dateshift_all_cols!(df, logger, dateshift_cols, id_col, dateshift_dict,
         Memento.info(logger, "$(Dates.now()) Shifting dates for column $col")
         dateshift_col!(df, col, id_col, dateshift_dict, max_days)
     end
+
+    return nothing
 end

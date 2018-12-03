@@ -14,13 +14,14 @@ To indicate how to de-identify the data, where the data lives, and other variabl
 configuration YAML file must be created by the user.
 
 ```
+# config.yml
 project:                <project name> # required
 project_seed:           <int>          # optional, but required for reproducibility
 log_path:               <dir path>     # required, must already be created
 max_dateshift_days:     <int>          # optional, default is 30
 output_path:            <dir path>     # required, must already be created
 
-# The primary ID must be present in all data sets, so that dateshifting and salting works appropriately
+# The primary ID must be present in all data sets, so that date shifting and salting work appropriately
 primary_id: <column name>       # required
 
 # 1 to n datasets must be present to de-identify
@@ -30,8 +31,6 @@ datasets:
     rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing
       - in: <col name 1a>                # required, current column name
         out: <col name 1b>               # required, future column name
-      - in: <col name 2a>                # required, current column name
-        out: <col name 2b>               # required, future column name
     hash_cols:                    # optional, columns to be hashed
       - <col name 1>
       - <col name 2>
@@ -49,8 +48,6 @@ datasets:
     rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing
       - in: <col name 1a>                # required, current column name
         out: <col name 1b>               # required, future column name
-      - in: <col name 2a>                # required, current column name
-        out: <col name 2b>               # required, future column name
     hash_cols:                    # optional, columns to be hashed
       - <col name 1>
       - <col name 2>
@@ -122,7 +119,7 @@ datasets:
 To de-identify a data set, pass the config YAML to the `deidentify` function.
 
 ```julia
-deidentify("./config.YML")
+deidentify("./config.yml")
 ```
 This will read in the data, de-identify the data, write a log to file, and write the resulting data set to file.
 
@@ -131,7 +128,7 @@ The pipeline consists of three main steps:
 * De-identify the data set
 * Write the de-identified data to files
 
-The `deidentify` function runs these three steps as so:
+The `deidentify` function runs the three steps:
 
 ```julia
 proj_config = DeIdConfig(cfg_file)

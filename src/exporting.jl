@@ -2,6 +2,14 @@
 
 import Base.write
 
+
+"""
+    write(deid)
+
+Writes DeIdentified structure to file. The datasets are outputted as CSVs,
+the dictionaries are written to josn. The files are written to the  `output_path`
+specified in the configuration YAML. 
+"""
 function write(deid::DeIdentified)
     outdir = deid.deid_config.outdir
     Memento.info(deid.logger, "$(Dates.now()) Writing DeIdenfied struct")

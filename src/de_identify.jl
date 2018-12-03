@@ -65,12 +65,11 @@ end
 """
     DeIdDataFrame(df, hash_cols, salt_cols, dateshift_cols, drop_cols, dateshift_dict, id_col, id_dicts, salt)
 
-This is the constructor for our DeIdDataFrame objects. Note that the first entry
-in the `id_col` is the primary identifier for the dataset and what we use for our lookup in the date-shift dictionary. Also
+This is the constructor for our DeIdDataFrame objects. Note that the
+`id_col` is the primary identifier for the dataset and what we use for our lookup in the date-shift dictionary. Also
 note that the `dateshift_dict` object stores the Research IDs as the keys, and
 number of days that the participant (for example) ought to have their dates shifted.
-The `id_dicts` argument is a dictionary containing other dictionaries that store
-the hash digest of original IDs to our new research IDs.
+The `id_dicts` argument is a dictionary containing the hash digest of original IDs to our new research IDs.
 """
 function DeIdDataFrame(df::DataFrames.DataFrame,
                        logger::Memento.Logger,
@@ -144,7 +143,7 @@ arrays of `DeIdDataFrame` variables, while also keeping a common `salt_dict` and
 `dateshift_dict` between `DeIdDataFrame`s. The `salt_dict` allows us to track
 what salt was used on what cleartext. This is only necessary in the case of doing
 re-identification. The `id_dicts` argument is a dictionary containing other
-dictionaries that store the hash digest of original IDs to our new research IDs.
+dictionaries that store the hash digest of the original primary IDs to our new research IDs.
 """
 function DeIdentified(cfg::DeIdConfig)
     num_dfs = length(cfg.df_configs)
