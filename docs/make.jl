@@ -7,7 +7,8 @@ makedocs(
     debug = true,
     pages = [
         "Home" => "index.md",
-        "Manual" => "documentation.md"
+        "Guide" => "usage.md",
+        "API" => "documentation.md"
         ]
     )
 

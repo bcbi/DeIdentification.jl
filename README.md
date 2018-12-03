@@ -1,20 +1,22 @@
 # DeIdentification.jl
 
-[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://bcbi.github.io/DeIdentification.jl/latest)
+[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://bcbi.github.io/DeIdentification.jl/latest) [![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl) [![codecov.io](http://codecov.io/github/bcbi/DeIdentification.jl/coverage.svg?branch=master)](http://codecov.io/github/bcbi/DeIdentification.jl?branch=master)
 
-[![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl)
-
-[![codecov.io](http://codecov.io/github/bcbi/DeIdentification.jl/coverage.svg?branch=master)](http://codecov.io/github/bcbi/DeIdentification.jl?branch=master)
-
-
+A Julia package for de-identifying CSV data sets.
 
 # 1. Installation
 ```julia
 Pkg.add("https://github.com/bcbi/DeIdentification.jl.git")
 ```
 
-<!-- # Important Notes
-There are a few subtle points that must be kept in mind when using this package. These are discussed below.
+# 2. Important Notes
+There are a few subtle points that must be kept in mind when using this package. See the documentation for more details.
 
-## Date Shifting.
-In the current implementation, date shifting is done by selecting a random random integer, _d_, between -_N_ and _N_. Where _N_ is a user-specified argument in the YAML file (or otherwise, passed directly to the `DeIdDataFrame()` constructor). -->
+## Identifiers
+All files must contain a primary identifier for the unit of analysis. E.g. if you are de-identifying patient data, all files must contain a patient ID.
+
+## Config
+A config YAML must be created by the user.
+
+## Directory Structure
+Logging and output directories must be defined by the user and already created before running the package

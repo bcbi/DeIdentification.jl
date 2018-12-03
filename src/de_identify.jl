@@ -30,8 +30,8 @@ function DeIdConfig(cfg_file::String)
     outdir = cfg["output_path"]
     pk = Symbol(cfg["primary_id"])
 
-    seed = cfg["project_seed"]
-    max_days = cfg["max_dateshift_days"]
+    seed = get(cfg, "project_seed", rand(1:1000))
+    max_days = get(cfg, "max_dateshift_days", 30)
 
     # initialize DataFrame Configs for data sets
     df_configs = Array{DfConfig,1}(undef, num_dfs)

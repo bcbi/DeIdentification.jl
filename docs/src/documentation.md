@@ -1,4 +1,4 @@
-# DeIdentification.jl Reference
+# API Reference
 
 ```@autodocs
 Modules = [DeIdentification]
