@@ -1,6 +1,6 @@
 module DeIdentification
 
-export DeIdentified, DeIdDataFrame, DeIdConfig, DfConfig
+export DeIdentified, DeIdDataFrame, DeIdConfig, DfConfig, deidentify
 
 import YAML
 import JSON
