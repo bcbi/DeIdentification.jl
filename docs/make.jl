@@ -3,7 +3,7 @@ using DeIdentification
 
 makedocs(
     modules = [ DeIdentification ],
-    assets = ["assets/favicon.ico"],
+    assets = ["assets/favicon.ico", "assets/bcbi.css"],
     sitename = "DeIdentification.jl",
     debug = true,
     pages = [
