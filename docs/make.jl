@@ -3,7 +3,10 @@ using DeIdentification
 
 makedocs(
     modules = [ DeIdentification ],
-    assets = ["assets/favicon.ico", "assets/bcbi.css"],
+    assets = [
+        "https://github.com/bcbi/code_style_guide/tree/master/assets/favicon.ico",
+        "assets/bcbi.css"
+        ],
     sitename = "DeIdentification.jl",
     debug = true,
     pages = [
