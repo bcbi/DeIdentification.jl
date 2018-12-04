@@ -4,8 +4,9 @@ using DeIdentification
 makedocs(
     modules = [ DeIdentification ],
     assets = [
-        "https://github.com/bcbi/code_style_guide/tree/master/assets/favicon.ico",
-        "assets/bcbi.css"
+        "assets/facicon.ico",
+        "assets/bcbi.css",
+        "assets/logo.png"
         ],
     sitename = "DeIdentification.jl",
     debug = true,
