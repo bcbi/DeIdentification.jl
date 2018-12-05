@@ -4,7 +4,7 @@ using DeIdentification
 makedocs(
     modules = [ DeIdentification ],
     assets = [
-        "assets/facicon.ico",
+        "assets/favicon.ico",
         "assets/bcbi.css",
         "assets/logo.png"
         ],
