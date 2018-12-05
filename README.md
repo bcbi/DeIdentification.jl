@@ -1,6 +1,6 @@
 # DeIdentification.jl
 
-[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://bcbi.github.io/DeIdentification.jl/latest) [![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl) [![codecov.io](http://codecov.io/github/bcbi/DeIdentification.jl/coverage.svg?branch=master)](http://codecov.io/github/bcbi/DeIdentification.jl?branch=master)
+[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://bcbi.github.io/DeIdentification.jl/latest) [![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl) [![codecov.io](http://codecov.io/github/bcbi/DeIdentification.jl/coverage.svg?branch=master)](http://codecov.io/github/bcbi/DeIdentification.jl?branch=master) [![DOI](https://zenodo.org/badge/145617556.svg)](https://zenodo.org/badge/latestdoi/145617556)
 
 A Julia package for de-identifying CSV data sets.
 
