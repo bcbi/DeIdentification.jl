@@ -17,14 +17,14 @@ favicon_path = joinpath(assets_dir,"favicon.ico")
 run(`curl -g -L -f -o $favicon_path $favicon_url`)
 
 # get/replace css
-favicon_url = base_url*"bcbi.css"
-favicon_path = joinpath(assets_dir,"bcbi.css")
-run(`curl -g -L -f -o $favicon_path $favicon_url`)
+css_url = base_url*"bcbi.css"
+css_path = joinpath(assets_dir,"bcbi.css")
+run(`curl -g -L -f -o $css_path $css_url`)
 
 # get/replace logo
-favicon_url = base_url*"bcbi-white-v.png"
-favicon_path = joinpath(assets_dir,"logo.png")
-run(`curl -g -L -f -o $favicon_path $favicon_url`)
+logo_url = base_url*"bcbi-white-v.png"
+logo_path = joinpath(assets_dir,"logo.png")
+run(`curl -g -L -f -o $logo_path $logo_url`)
 
 makedocs(
     modules = [ DeIdentification ],
