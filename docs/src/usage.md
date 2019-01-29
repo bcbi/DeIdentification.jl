@@ -71,8 +71,11 @@ log_path:               "./logs"
 max_dateshift_days:     30
 output_path:            "./output"
 
-# The primary ID must be present in all data sets, so that dateshifting and salting works appropriately
+# The primary ID must be present in all data sets, so that date shifting and salting works appropriately
 primary_id: "CSN"
+
+# Default date format is "y/m/d H:M:S" (e.g. 1999/05/21 11:23:56) - see Dates.DateFormat for options
+date_format: "y-m-dTH:M:S.s"
 
 datasets:
   - name: dx
