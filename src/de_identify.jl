@@ -20,6 +20,7 @@ struct DeIdConfig
     df_configs::Array{DfConfig,1}
     max_days::Int
     primary_id::Symbol
+    date_format::String
 end
 
 
@@ -29,6 +30,7 @@ function DeIdConfig(cfg_file::String)
     num_dfs = length(cfg["datasets"])
     outdir = cfg["output_path"]
     pk = Symbol(cfg["primary_id"])
+    dt_ft = get(cfg, "date_format", "y/m/d H:M:S")
 
     seed = get(cfg, "project_seed", rand(1:1000))
     max_days = get(cfg, "max_dateshift_days", 30)
@@ -51,7 +53,7 @@ function DeIdConfig(cfg_file::String)
         df_configs[i] = DfConfig(name, filename, hash_cols, salt_cols, dateshift_cols, drop_cols, rename_dict)
     end
 
-    return DeIdConfig(cfg["project"], logfile, outdir, seed, df_configs, max_days, pk)
+    return DeIdConfig(cfg["project"], logfile, outdir, seed, df_configs, max_days, pk, dt_ft)
 end
 
 
@@ -169,11 +171,14 @@ function DeIdentified(cfg::DeIdConfig)
     # Memento.info(df_logger, "MAX_DATESHIFT_DAYS is set to $MAX_DATESHIFT_DAYS")
 
     for (i, dfc) in enumerate(cfg.df_configs)
+        Memento.info(df_logger, "$(Dates.now()) ====================== Processing $(dfc.name) ======================")
         Memento.info(df_logger, "$(Dates.now()) Reading dataframe from $(dfc.filename)")
-        df = CSV.read(dfc.filename)
+        df = CSV.read(dfc.filename, dateformat=cfg.date_format)
 
+        Memento.info(df_logger, "$(Dates.now()) Renaming dataframe columns")
         DataFrames.rename!(df, dfc.rename_cols)
 
+        Memento.info(df_logger, "$(Dates.now()) Checking for primary column")
         @assert cfg.primary_id in getfield(getfield(df, :colindex), :names)
 
         deid_dfs[i] = DeIdDataFrame(df,
