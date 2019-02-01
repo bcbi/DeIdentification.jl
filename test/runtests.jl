@@ -1,5 +1,4 @@
 using DeIdentification
-using DataFrames
 using CSV
 using YAML
 
@@ -23,65 +22,71 @@ mkdir(joinpath(@__DIR__, "output"))
     # nominally check YAML loading worked
     @test cfg_raw["project"] == "ehr"
 
-    cfg = DeIdConfig(test_file)
+    cfg = ProjectConfig(test_file)
 
-    @test cfg_raw["project"] == cfg.project
-    @test cfg_raw["datasets"][1]["name"] == cfg.df_configs[1].name
+    @test cfg_raw["project"] == cfg.name
+    @test cfg_raw["datasets"][1]["name"] == cfg.file_configs[1].name
 end
 
 @testset "rid_generation" begin
 
-    df1 = DataFrame(id = [4, 6, 7, 3, 3, 5, 7],
-                    x1 = rand(7),
-                    x2 = ["cat", "dog", "dog", "fish", "bird", "cat", "dog"],
-                    x3 = ["2018-02-22", "2018-05-11", "2018-09-20", "2014-03-12",
-                           "2011-11-25", "2001-05-31", "1990-04-27"])
+    ids1 = [4, 6, 7, 3, 3, 5, 7]
 
-    df2 = DataFrame(id = [6, 5, 3, 4, 5],
-                   y1 = randn(5))
+    ids2 = [6, 5, 3, 4, 5]
 
     # Check hashing and research ID generation
-    id_dict = Dict{String, Int}()
-    DeIdentification.hash_column!(df1, :id)
-    DeIdentification.hash_column!(df2, :id)
+    dicts = DeIdDicts(30)
+    hash1 = map( x-> DeIdentification.getoutput(dicts, DeIdentification.Hash, x, 0), ids1)
+    hash2 = map( x-> DeIdentification.getoutput(dicts, DeIdentification.Hash, x, 0), ids2)
 
-    @test DeIdentification.rid_generation(df1, :id, id_dict) == [1, 2, 3, 4, 4, 5, 3]
-    @test DeIdentification.rid_generation(df2, :id, id_dict) == [2, 5, 4, 1, 5]
+    rid1 = map( x-> DeIdentification.setrid(x, dicts), hash1)
+    rid2 = map( x-> DeIdentification.setrid(x, dicts), hash2)
+
+    @test rid1 == [1, 2, 3, 4, 4, 5, 3]
+    @test rid2 == [2, 5, 4, 1, 5]
 end
 
 
 @testset "integration_tests" begin
-    proj_config = DeIdConfig(test_file)
-    deid = DeIdentified(proj_config)
+    proj_config = ProjectConfig(test_file)
+    deid = deidentify(proj_config)
 
-    @test typeof(deid) == DeIdentified
+    @test typeof(deid) == DeIdDicts
 
     @test isfile(joinpath(logpath,"ehr.log.0001"))
 
-    DeIdentification.write(deid)
+    dx = false
+    salts = false
+    for (root, dirs, files) in walkdir(outputpath)
+        for file in files
+            if occursin(r"^deid_dx_.*csv", file)
+                dx = true
+            elseif occursin(r"salts_.*json", file)
+                salts = true
+            end
+        end
+    end
 
-    @test isfile(joinpath(outputpath, "deid_dx.csv"))
-    @test isfile(joinpath(outputpath, "salts.json"))
+    @test dx == true
+    @test salts == true
 end
 
 @testset "primary identifiter" begin
-    cfg = DeIdConfig("ehr_data_bad_pk.yml")
+    cfg = ProjectConfig("ehr_data_bad_pk.yml")
 
-    @test_throws AssertionError DeIdentified(cfg)
+    @test_throws AssertionError deidentify(cfg)
 end
 
 @testset "hash seeding" begin
-    cfg1 = DeIdConfig(test_file)
-    cfg2 = DeIdConfig("ehr_data_alt_seed.yml")
+    cfg1 = ProjectConfig(test_file)
+    cfg2 = ProjectConfig("ehr_data_alt_seed.yml")
 
-    deid1 = DeIdentified(cfg1)
-    deid1a = DeIdentified(cfg1)
-    deid2 = DeIdentified(cfg2)
+    deid1 = deidentify(cfg1)
+    deid1a = deidentify(cfg1)
+    deid2 = deidentify(cfg2)
 
-    @test deid1.df_array[1].df == deid1a.df_array[1].df
-    @test deid1.salt_dict == deid1a.salt_dict
-    @test deid1.df_array[1].df != deid2.df_array[1].df
-    @test deid1.salt_dict != deid2.salt_dict
+    @test deid1.salt == deid1a.salt
+    @test deid1.salt != deid2.salt
 end
 
 # TEAR DOWN

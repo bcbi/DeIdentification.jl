@@ -24,6 +24,9 @@ output_path:            <dir path>     # required, must already be created
 # The primary ID must be present in all data sets, so that date shifting and salting work appropriately
 primary_id: <column name>       # required
 
+# Default date format is "y/m/d H:M:S" (e.g. 1999/05/21 11:23:56) - see Dates.DateFormat for options
+date_format: <Dates.DateFormat>
+
 # 1 to n datasets must be present to de-identify
 datasets:
   - name: <dataset name 1>          # required, used to name output file
@@ -73,6 +76,9 @@ output_path:            "./output"
 
 # The primary ID must be present in all data sets, so that dateshifting and salting works appropriately
 primary_id: "CSN"
+
+# Default date format is "y/m/d H:M:S" (e.g. 1999/05/21 11:23:56) - see Dates.DateFormat for options
+date_format: "y-m-dTH:M:S.s"
 
 datasets:
   - name: dx
@@ -125,13 +131,12 @@ This will read in the data, de-identify the data, write a log to file, and write
 
 The pipeline consists of three main steps:
 * Read the configuration file and process the settings
-* De-identify the data set
-* Write the de-identified data to files
+* De-identify and write the data set
+* Write the dictionaries with salts, dateshift values, and research IDs to files
 
 The `deidentify` function runs the three steps:
 
 ```julia
 proj_config = DeIdConfig(cfg_file)
 deid = DeIdentified(proj_config)
-DeIdentification.write(deid)
 ```
