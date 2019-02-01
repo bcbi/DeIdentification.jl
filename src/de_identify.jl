@@ -93,7 +93,7 @@ function DeIdDataFrame(df::DataFrames.DataFrame,
 
     for col in drop_cols
         Memento.info(logger, "$(Dates.now()) Dropping column $col")
-        delete!(df_new, col)
+        deletecols!(df_new, col)
     end
 
     hash_all_columns!(df_new, logger, hash_cols, salt_cols, id_col, id_dicts, salt_dict)
