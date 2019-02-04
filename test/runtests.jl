@@ -33,7 +33,6 @@ end
 @testset "rid_generation" begin
 
     ids1 = [4, 6, 7, 3, 3, 5, 7]
-
     ids2 = [6, 5, 3, 4, 5]
 
     # Check hashing and research ID generation
@@ -79,6 +78,10 @@ end
 
     # test that hash column was hashed
     @test length(df[1, :PatientPrimaryMRN]) == 64
+
+    # test that dropped column was dropped
+    @test in(:EDDiagnosisTerminologyType, getfield(getfield(dfo, :colindex),:names))
+    @test !in(:EDDiagnosisTerminologyType, getfield(getfield(df, :colindex),:names))
 
     # test that dateshifted column was dateshifted
     @test df[1,:ArrivalDateandTime] != dfo[1,:ArrivalDateandTime]
