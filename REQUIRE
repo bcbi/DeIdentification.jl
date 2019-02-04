@@ -1,6 +1,7 @@
 julia 0.7
 CSV
-Tables
+DataFrames
 JSON
 Memento
+Tables
 YAML

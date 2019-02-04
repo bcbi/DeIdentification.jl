@@ -1,6 +1,8 @@
 using DeIdentification
 using CSV
 using YAML
+using DataFrames
+using Dates
 
 using Test
 
@@ -57,16 +59,33 @@ end
 
     dx = false
     salts = false
+    df = DataFrame()
     for (root, dirs, files) in walkdir(outputpath)
         for file in files
             if occursin(r"^deid_dx_.*csv", file)
                 dx = true
+                df = CSV.read(joinpath(root,file))
             elseif occursin(r"salts_.*json", file)
                 salts = true
             end
         end
     end
 
+    dfo = CSV.read(joinpath(@__DIR__, "data", "dx.csv"))
+
+    # test column name change
+    @test in(:EncounterEpicCSN, getfield(getfield(dfo, :colindex),:names))
+    @test in(:CSN, getfield(getfield(df, :colindex),:names))
+
+    # test that hash column was hashed
+    @test length(df[1, :PatientPrimaryMRN]) == 64
+
+    # test that dateshifted column was dateshifted
+    @test df[1,:ArrivalDateandTime] != dfo[1,:ArrivalDateandTime]
+    println(Dates.days(abs(df[1,:ArrivalDateandTime] - dfo[1,:ArrivalDateandTime])))
+    @test Dates.days(abs(df[1,:ArrivalDateandTime] - dfo[1,:ArrivalDateandTime])) <= proj_config.maxdays
+
+    # test that files were created as expected
     @test dx == true
     @test salts == true
 end
@@ -92,4 +111,4 @@ end
 # TEAR DOWN
 rm(logpath, recursive=true)
 rm(outputpath, recursive=true)
-#--------------------------
+# --------------------------

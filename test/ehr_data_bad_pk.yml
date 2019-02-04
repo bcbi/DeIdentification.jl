@@ -21,6 +21,8 @@ datasets:
       - "PatientPrimaryMRN"
     dateshift_cols:
       - "ArrivalDateandTime"
+    drop_cols:
+      - "EDDiagnosisTerminologyType"
   - name: pat
     filename: "./data/pat.csv"
     # NOTE: renaming happens before any other operations (hashing, salting, dropping, dateshifting)

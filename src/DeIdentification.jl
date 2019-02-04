@@ -26,6 +26,7 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
     outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * string(Dates.now()) * "csv")
 
     ncol = length(infile.names)
+    lastcol = infile.names[end]
 
     new_names = Vector{Symbol}()
     new_types = Vector{Type}()
@@ -66,30 +67,40 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
     # write header to file
     CSV.write(schema, [], outfile)
 
-    # Process each row
-    for row in infile
-        outrow = []
+    open(outfile, "a") do io
 
-        val = getoutput(dicts, Hash, getproperty(row, pcol), 0)
-        pid = setrid(val, dicts)
+        # Process each row
+        for row in infile
 
-        for col in infile.names
-            colname = get(fc.rename_cols, col, col)
+            val = getoutput(dicts, Hash, getproperty(row, pcol), 0)
+            pid = setrid(val, dicts)
 
-            action = get(fc.colmap, colname, Missing) ::Type
-            # drop cols
-            action == Drop && continue
+            for col in infile.names
+                colname = get(fc.rename_cols, col, col)
 
-            val = getoutput(dicts, action, getproperty(row, col), pid)
+                action = get(fc.colmap, colname, Missing) ::Type
+                # drop cols
+                action == Drop && continue
 
-            if col == pcol
-                val = pid
+                val = getoutput(dicts, action, getproperty(row, col), pid)
+
+                if col == pcol
+                    val = pid
+                end
+
+                if eltype(val) <: String
+                    val = replace(val, "\"" => "\\\"")
+                end
+
+                write(io, "\"$val\"")
+                if lastcol == col
+                    write(io, '\n')
+                else
+                    write(io, ",")
+                end
             end
-
-            push!(outrow, val)
         end
 
-        CSV.write(schema, [row], outfile, append=true)
     end
 
     return nothing
