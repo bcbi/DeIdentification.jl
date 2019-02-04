@@ -17,7 +17,9 @@ include("exporting.jl")
 """
     deid_file!(dicts, file_config, project_config, logger)
 
-FILL THIS IN
+Reads raw file and deidentifies per file configuration and project configurationg.
+Writes the deidentified data to a CSV file and updates the global dictionaries
+tracking identifier mappings.
 """
 function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
 
