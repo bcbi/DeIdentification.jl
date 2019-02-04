@@ -10,7 +10,7 @@ pages = [
 ```
 
 ### Quick Notes:
-* Compatible with julia 0.7 and 1.0
+* Compatible with julia 0.7 and above
 * In your directory make sure to have the following sub-directories:
   * logs
   * output

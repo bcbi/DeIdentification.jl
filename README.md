@@ -1,12 +1,12 @@
 # DeIdentification.jl
 
-[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://bcbi.github.io/DeIdentification.jl/latest) [![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl) [![codecov.io](http://codecov.io/github/bcbi/DeIdentification.jl/coverage.svg?branch=master)](http://codecov.io/github/bcbi/DeIdentification.jl?branch=master) [![DOI](https://zenodo.org/badge/145617556.svg)](https://zenodo.org/badge/latestdoi/145617556)
+[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://bcbi.github.io/DeIdentification.jl/latest) [![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl) [![codecov.io](https://codecov.io/github/bcbi/DeIdentification.jl/coverage.svg?branch=master)](https://codecov.io/github/bcbi/DeIdentification.jl?branch=master) [![DOI](https://zenodo.org/badge/145617556.svg)](https://zenodo.org/badge/latestdoi/145617556)
 
 A Julia package for de-identifying CSV data sets.
 
 # 1. Installation
 ```julia
-Pkg.add("https://github.com/bcbi/DeIdentification.jl.git")
+Pkg.add("DeIdentification")
 ```
 
 # 2. Important Notes

@@ -1,44 +1,64 @@
 # de_identify.jl
 
+# types of column deidentification
+abstract type Hash end
+abstract type Salt end
+abstract type DateShift end
+abstract type Drop end
 
-struct DfConfig
+# utility function to get column names from YAML
+function getcols(ds, col::String)
+    map(Symbol, get(ds, col, Array{String,1}()))
+end
+
+"""
+    FileConfig(name, filename, colmap, rename_cols)
+
+Structure containing configuration information for each datset in the configuration
+YAML file.  The colmap contains mapping of column names to their deidentification
+action (e.g. hash, salt, drop).
+"""
+struct FileConfig
     name::String
     filename::String
-    hash_cols::Array{Symbol,1}
-    salt_cols::Array{Symbol,1}
-    dateshift_cols::Array{Symbol,1}
-    drop_cols::Array{Symbol,1}
+    colmap::Dict{Symbol, Type}
     rename_cols::Dict{Symbol,Symbol}
 end
 
 
-struct DeIdConfig
-    project::String
+struct ProjectConfig
+    name::String
     logfile::String
     outdir::String
     seed::Int
-    df_configs::Array{DfConfig,1}
-    max_days::Int
+    file_configs::Array{FileConfig,1}
+    maxdays::Int
     primary_id::Symbol
-    date_format::String
+    dateformat::String
 end
 
+"""
+    ProjectConfig(config_file::String)
 
-function DeIdConfig(cfg_file::String)
+Structure containing configuration information for project level information in the configuration
+YAML file.  This includes an array containing the FileConfig structures for dataset
+level information.
+"""
+function ProjectConfig(cfg_file::String)
     cfg = YAML.load(open(cfg_file))
     logfile = joinpath(cfg["log_path"], cfg["project"]*".log")
-    num_dfs = length(cfg["datasets"])
+    num_file = length(cfg["datasets"])
     outdir = cfg["output_path"]
     pk = Symbol(cfg["primary_id"])
-    dt_ft = get(cfg, "date_format", "y/m/d H:M:S")
+    dateformat = get(cfg, "date_format", "y/m/d H:M:S")
 
     seed = get(cfg, "project_seed", rand(1:1000))
-    max_days = get(cfg, "max_dateshift_days", 30)
+    maxdays = get(cfg, "max_dateshift_days", 30)
 
-    # initialize DataFrame Configs for data sets
-    df_configs = Array{DfConfig,1}(undef, num_dfs)
+    # initialize File Configs for data sets
+    file_configs = Array{FileConfig,1}(undef, num_file)
 
-    # populate DF Configs
+    # populate File Configs
     for (i, ds) in enumerate(cfg["datasets"])
         name = ds["name"]
         filename = ds["filename"]
@@ -46,163 +66,120 @@ function DeIdConfig(cfg_file::String)
         for pair in get(ds, "rename_cols", [])
             rename_dict[Symbol(pair["in"])] = Symbol(pair["out"])
         end
-        hash_cols = map(Symbol, get(ds, "hash_cols", Array{String,1}()))
-        salt_cols = map(Symbol, get(ds, "salt_cols", Array{String,1}()))
-        dateshift_cols = map(Symbol,  get(ds, "dateshift_cols", Array{String,1}()))
-        drop_cols = map(Symbol,  get(ds, "drop_cols", Array{String,1}()))
-        df_configs[i] = DfConfig(name, filename, hash_cols, salt_cols, dateshift_cols, drop_cols, rename_dict)
+
+        col_map = Dict{Symbol, Type}()
+        [col_map[col] = Hash       for col in getcols(ds, "hash_cols")]
+        [col_map[col] = Salt       for col in getcols(ds, "salt_cols")]
+        [col_map[col] = DateShift  for col in getcols(ds, "dateshift_cols")]
+        [col_map[col] = Drop       for col in getcols(ds, "drop_cols")]
+
+        file_configs[i] = FileConfig(name, filename, col_map, rename_dict)
     end
 
-    return DeIdConfig(cfg["project"], logfile, outdir, seed, df_configs, max_days, pk, dt_ft)
+    return ProjectConfig(cfg["project"], logfile, outdir, seed, file_configs, maxdays, pk, dateformat)
 end
 
 
-struct DeIdDataFrame
-    df::DataFrames.DataFrame
-    hash_cols::Array{Symbol, 1}
-    salt_cols::Array{Symbol, 1}
-    dateshift_cols::Array{Symbol, 1}
+struct DeIdDicts
+    id::Dict{String, Int}
+    salt::Dict{Any, String}
+    dateshift::Dict{Int, Int}
+    maxdays::Int
 end
 
 """
-    DeIdDataFrame(df, hash_cols, salt_cols, dateshift_cols, drop_cols, dateshift_dict, id_col, id_dicts, salt)
+    DeIdDicts(maxdays)
 
-This is the constructor for our DeIdDataFrame objects. Note that the
-`id_col` is the primary identifier for the dataset and what we use for our lookup in the date-shift dictionary. Also
-note that the `dateshift_dict` object stores the Research IDs as the keys, and
-number of days that the participant (for example) ought to have their dates shifted.
-The `id_dicts` argument is a dictionary containing the hash digest of original IDs to our new research IDs.
+Structure containing dictionaries for project level mappings
+- Primary ID -> Research ID
+- Research ID -> DateShift number of days
+- Research ID -> Salt value
 """
-function DeIdDataFrame(df::DataFrames.DataFrame,
-                       logger::Memento.Logger,
-                       hash_cols::Array{Symbol, 1},
-                       salt_cols::Array{Symbol, 1},
-                       dateshift_cols::Array{Symbol, 1},
-                       drop_cols::Array{Symbol, 1},
-                       dateshift_dict::Dict{Int, Int},
-                       id_col::Symbol,
-                       id_dicts::Dict{Symbol, Dict{String, Int}},
-                       salt_dict::Dict{Any, String})
-    df_new = copy(df)
+DeIdDicts(maxdays) = DeIdDicts(Dict{String, Int}(), Dict{Any, String}(), Dict{Int, Int}(), maxdays)
 
-    # Here we shuffle the rows so that ID creation does not
-    # preserve information about the individual records.
-    n = DataFrames.DataFrames.nrow(df_new)
-    Memento.info(logger, "$(Dates.now()) Shuffling $n rows")
-    df_new = df_new[shuffle(1:n), :]
 
-    for col in drop_cols
-        Memento.info(logger, "$(Dates.now()) Dropping column $col")
-        deletecols!(df_new, col)
+"""
+    hash_salt_val!(dicts, val, pid)
+
+Salt and hash fields containing unique identifiers. Hashing is done in place
+using SHA256 and a 64-bit salt. Of note is that missing values are left missing.
+"""
+function hash_salt_val!(dicts::DeIdDicts, val, pid)
+
+    ismissing(val) && return val
+
+    if haskey(dicts.salt, pid)
+        salt = dicts.salt[pid]
+    else
+        salt = randstring(16)
+        dicts.salt[pid] = salt
     end
 
-    hash_all_columns!(df_new, logger, hash_cols, salt_cols, id_col, id_dicts, salt_dict)
+    return bytes2hex(sha256(string(val, salt)))
 
-    dateshift_id = Symbol(string("rid_", id_col))
-    dateshift_all_cols!(df_new, logger, dateshift_cols, dateshift_id, dateshift_dict)
-
-    return DeIdDataFrame(df_new, hash_cols, salt_cols, dateshift_cols)
 end
 
-
-DeIdDataFrame(df::DataFrames.DataFrame,
-               logger::Memento.Logger,
-               hash_cols::Array{Symbol, 1},
-               dateshift_cols::Array{Symbol, 1},
-               dateshift_dict::Dict{Int, Int},
-               id_col::Symbol,
-               id_dicts::Dict{Symbol, Dict{String, Int}}) = DeIdDataFrame(df, logger, hash_cols, [], dateshift_cols, [], dateshift_dict, id_col, id_dicts, Dict())
-
-
-
-# NOTE: This constructor uses a `DfConfig` struct to pass the configuration
-# that defines the set of columns to be hashed, salted, and date shifted.
-DeIdDataFrame(df::DataFrames.DataFrame,
-               cfg::DfConfig,
-               logger::Memento.Logger,
-               dateshift_dict::Dict{Int, Int},
-               id_col::Symbol,
-               id_dicts::Dict{Symbol, Dict{String, Int}},
-               salt_dict::Dict{Any, String}) = DeIdDataFrame(df, logger, cfg.hash_cols, cfg.salt_cols, cfg.dateshift_cols, cfg.drop_cols, dateshift_dict, id_col, id_dicts, salt_dict)
-
-
-
-
-struct DeIdentified
-    df_array::Array{DeIdDataFrame, 1}
-    dateshift_dict::Dict{Int, Int}      # unique ID and num days
-    salt_dict::Dict{Any, String}        # primary_identifier, salt
-    id_dicts::Dict{Symbol, Dict{String, Int}}
-    logger::Memento.Logger
-    deid_config::DeIdConfig
-end
-
-
 """
-    DeIdentified(cfg)
-This is the constructor for the `DeIdentified` struct. We use this type to store
-arrays of `DeIdDataFrame` variables, while also keeping a common `salt_dict` and
-`dateshift_dict` between `DeIdDataFrame`s. The `salt_dict` allows us to track
-what salt was used on what cleartext. This is only necessary in the case of doing
-re-identification. The `id_dicts` argument is a dictionary containing other
-dictionaries that store the hash digest of the original primary IDs to our new research IDs.
+    dateshift_val!(dicts, val, pid)
+
+Dateshift fields containing dates. Dates are shifted by a maximum number of days
+specified in the project config.  All of the dates for the same primary key are
+shifted the same number of days. Of note is that missing values are left missing.
 """
-function DeIdentified(cfg::DeIdConfig)
-    num_dfs = length(cfg.df_configs)
-    deid_dfs = Array{DeIdDataFrame,1}(undef, num_dfs)
-    id_dicts = Dict{Symbol,Dict{String,Int}}()
-    salt_dict = Dict{Any, String}()
-    dateshift_dict = Dict{Int, Int}()
+function dateshift_val!(dicts::DeIdDicts, val::Union{Dates.Date, Dates.DateTime}, pid)
 
+    ismissing(val) && return val
 
-    # Set up our top-level logger
-    # root_logger = Memento.getlogger()
-    df_logger = Memento.getlogger("deidentify")
-    logfile_roller = Memento.FileRoller(cfg.logfile)
-    # push!(root_logger, DefaultHandler(logfile_roller))
-    push!(df_logger, Memento.DefaultHandler(logfile_roller))
-
-    Memento.info(df_logger, "$(Dates.now()) Logging session for project $(cfg.project)")
-
-    Memento.info(df_logger, "$(Dates.now()) Setting seed for project $(cfg.project)")
-    seed!(cfg.seed)
-
-    # set_max_days!(cfg.max_days)    # Set global MAX_DATESHIFT_DAYS variable
-    # Memento.info(df_logger, "MAX_DATESHIFT_DAYS is set to $MAX_DATESHIFT_DAYS")
-
-    for (i, dfc) in enumerate(cfg.df_configs)
-        Memento.info(df_logger, "$(Dates.now()) ====================== Processing $(dfc.name) ======================")
-        Memento.info(df_logger, "$(Dates.now()) Reading dataframe from $(dfc.filename)")
-        df = CSV.read(dfc.filename, dateformat=cfg.date_format)
-
-        Memento.info(df_logger, "$(Dates.now()) Renaming dataframe columns")
-        DataFrames.rename!(df, dfc.rename_cols)
-
-        Memento.info(df_logger, "$(Dates.now()) Checking for primary column")
-        @assert cfg.primary_id in getfield(getfield(df, :colindex), :names)
-
-        deid_dfs[i] = DeIdDataFrame(df,
-                                    dfc,
-                                    df_logger,
-                                    dateshift_dict,
-                                    cfg.primary_id,
-                                    id_dicts,
-                                    salt_dict)
+    if haskey(dicts.dateshift, pid)
+        n_days = dicts.dateshift[pid]
+    else
+        max_days = dicts.maxdays
+        n_days = rand(-max_days:max_days)
+        dicts.dateshift[pid] = n_days
     end
 
-    return DeIdentified(deid_dfs, dateshift_dict, salt_dict, id_dicts, df_logger, cfg)
+    return val + Dates.Day(n_days)
+
 end
 
 """
-    deidentify(config_path)
+    setrid(val, dicts)
 
-Run entire pipelint: Processes configuration YAML file, de-identifies the data,
-and writes the data to disk.  Returns the DeIdentified object.
+Set the value passed (a hex string) to a human readable integer.  It generates
+a new ID if the value hasn't been seen before, otherwise the existing ID is used.
 """
-function deidentify(cfg_file::String)
-    proj_config = DeIdConfig(cfg_file)
-    deid = DeIdentified(proj_config)
-    DeIdentification.write(deid)
+function setrid(val, dicts::DeIdDicts)
+    ismissing(val) && return val
 
-    return deid
+    if haskey(dicts.id, val)
+        val = dicts.id[val]
+    else
+        new_id = 1 + length(dicts.id)
+        dicts.id[val] = new_id
+        val = new_id
+    end
+
+    return val
+end
+
+
+# Series of getoutput functions for each type of action
+function getoutput(dicts::DeIdDicts, ::Type{Missing}, val, pid::Int)
+    return val
+end
+
+function getoutput(dicts::DeIdDicts, ::Type{Drop}, val, pid::Int)
+    return nothing
+end
+
+function getoutput(dicts::DeIdDicts, ::Type{Hash}, val, pid::Int)
+    return bytes2hex(sha256(string(val)))
+end
+
+function getoutput(dicts::DeIdDicts, ::Type{Salt}, val, pid::Int)
+    return hash_salt_val!(dicts, val, pid)
+end
+
+function getoutput(dicts::DeIdDicts, ::Type{DateShift}, val, pid::Int)
+    return dateshift_val!(dicts, val, pid)
 end
