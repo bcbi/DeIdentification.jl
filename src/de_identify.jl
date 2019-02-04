@@ -91,23 +91,18 @@ end
     DeIdDicts(maxdays)
 
 Structure containing dictionaries for project level mappings
-    - Primary ID -> Research ID
-    - Research ID -> DateShift number of days
-    - Research ID -> Salt value
+- Primary ID -> Research ID
+- Research ID -> DateShift number of days
+- Research ID -> Salt value
 """
 DeIdDicts(maxdays) = DeIdDicts(Dict{String, Int}(), Dict{Any, String}(), Dict{Int, Int}(), maxdays)
 
 
 """
     hash_salt_val!(dicts, val, pid)
-This function is used to salt and hash columns containing unique identifiers.
-Hashing is done in place using SHA256 and a 64-bit salt. Of note is that missing
-values are left missing.
 
-# Arguments
-- `df::DataFrame`: The dataframe to be de-idenfied
-- `col_name::Symbol`: Name of column to de-idenfy
-- `salt_dict::Dict{String, Tuple{String, Symbol}}`: Dictionary where key is cleartext, and value is a Tuple with {salt, column name}
+Salt and hash fields containing unique identifiers. Hashing is done in place
+using SHA256 and a 64-bit salt. Of note is that missing values are left missing.
 """
 function hash_salt_val!(dicts::DeIdDicts, val, pid)
 
@@ -126,6 +121,10 @@ end
 
 """
     dateshift_val!(dicts, val, pid)
+
+Dateshift fields containing dates. Dates are shifted by a maximum number of days
+specified in the project config.  All of the dates for the same primary key are
+shifted the same number of days. Of note is that missing values are left missing.
 """
 function dateshift_val!(dicts::DeIdDicts, val::Union{Dates.Date, Dates.DateTime}, pid)
 
@@ -147,7 +146,7 @@ end
     setrid(val, dicts)
 
 Set the value passed (a hex string) to a human readable integer.  It generates
-a new ID if the value hasn't been seen before, otehrwise the existing ID is used.
+a new ID if the value hasn't been seen before, otherwise the existing ID is used.
 """
 function setrid(val, dicts::DeIdDicts)
     ismissing(val) && return val

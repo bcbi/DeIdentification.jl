@@ -2,12 +2,11 @@
 """
     write_dicts(deid_dicts)
 
-Writes DeIdentified structure to file. The datasets are outputted as CSVs,
-the dictionaries are written to josn. The files are written to the  `output_path`
-specified in the configuration YAML.
+Writes DeIdDicts structure to file. The dictionaries are written to josn. The
+files are written to the  `output_path` specified in the configuration YAML.
 """
 function write_dicts(deid::DeIdDicts, logger, outdir)
-    
+
     idfile = joinpath(outdir, "id_dicts_" * string(Dates.now()) * ".json")
     Memento.info(logger, "$(Dates.now()) Writing ID dictionaries to $(idfile)")
     write(idfile, JSON.Writer.json(deid.id, 4))

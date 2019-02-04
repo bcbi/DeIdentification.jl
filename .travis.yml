@@ -23,6 +23,7 @@ jobs:
       julia: 1.0
       script:
         - julia -e 'import Pkg; Pkg.instantiate(); Pkg.add("Documenter"); include(joinpath("docs", "make.jl"))'
+      after_success: skip
     - stage: Semantic Release
       if: branch = master AND type != pull_request
       language: python
