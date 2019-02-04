@@ -9,6 +9,9 @@ output_path:            &lt;dir path&gt;     # required, must already be created
 # The primary ID must be present in all data sets, so that date shifting and salting work appropriately
 primary_id: &lt;column name&gt;       # required
 
+# Default date format is &quot;y/m/d H:M:S&quot; (e.g. 1999/05/21 11:23:56) - see Dates.DateFormat for options
+date_format: &lt;Dates.DateFormat&gt;
+
 # 1 to n datasets must be present to de-identify
 datasets:
   - name: &lt;dataset name 1&gt;          # required, used to name output file
@@ -53,6 +56,9 @@ output_path:            &quot;./output&quot;
 # The primary ID must be present in all data sets, so that dateshifting and salting works appropriately
 primary_id: &quot;CSN&quot;
 
+# Default date format is &quot;y/m/d H:M:S&quot; (e.g. 1999/05/21 11:23:56) - see Dates.DateFormat for options
+date_format: &quot;y-m-dTH:M:S.s&quot;
+
 datasets:
   - name: dx
     filename: &quot;./data/dx.csv&quot;
@@ -91,6 +97,5 @@ datasets:
     dateshift_cols:
       - &quot;ArrivalDateandTime&quot;
     drop_cols:
-      - &quot;MedicationTherapeuticClass&quot;</code></pre><h2><a class="nav-anchor" id="Running-the-Pipeline-1" href="#Running-the-Pipeline-1">Running the Pipeline</a></h2><p>To de-identify a data set, pass the config YAML to the <code>deidentify</code> function.</p><pre><code class="language-julia">deidentify(&quot;./config.yml&quot;)</code></pre><p>This will read in the data, de-identify the data, write a log to file, and write the resulting data set to file.</p><p>The pipeline consists of three main steps:</p><ul><li>Read the configuration file and process the settings</li><li>De-identify the data set</li><li>Write the de-identified data to files</li></ul><p>The <code>deidentify</code> function runs the three steps:</p><pre><code class="language-julia">proj_config = DeIdConfig(cfg_file)
-deid = DeIdentified(proj_config)
-DeIdentification.write(deid)</code></pre><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../documentation/"><span class="direction">Next</span><span class="title">API</span></a></footer></article></body></html>
+      - &quot;MedicationTherapeuticClass&quot;</code></pre><h2><a class="nav-anchor" id="Running-the-Pipeline-1" href="#Running-the-Pipeline-1">Running the Pipeline</a></h2><p>To de-identify a data set, pass the config YAML to the <code>deidentify</code> function.</p><pre><code class="language-julia">deidentify(&quot;./config.yml&quot;)</code></pre><p>This will read in the data, de-identify the data, write a log to file, and write the resulting data set to file.</p><p>The pipeline consists of three main steps:</p><ul><li>Read the configuration file and process the settings</li><li>De-identify and write the data set</li><li>Write the dictionaries with salts, dateshift values, and research IDs to files</li></ul><p>The <code>deidentify</code> function runs the three steps:</p><pre><code class="language-julia">proj_config = DeIdConfig(cfg_file)
+deid = DeIdentified(proj_config)</code></pre><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../documentation/"><span class="direction">Next</span><span class="title">API</span></a></footer></article></body></html>
