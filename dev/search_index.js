@@ -121,7 +121,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "documentation/#DeIdentification.dateshift_val!-Tuple{DeIdDicts,Union{Date, DateTime},Any}",
+    "location": "documentation/#DeIdentification.dateshift_val!-Tuple{DeIdDicts,Union{Missing, Date, DateTime},Int64}",
     "page": "API",
     "title": "DeIdentification.dateshift_val!",
     "category": "method",
@@ -137,7 +137,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "documentation/#DeIdentification.hash_salt_val!-Tuple{DeIdDicts,Any,Any}",
+    "location": "documentation/#DeIdentification.hash_salt_val!-Tuple{DeIdDicts,Any,Int64}",
     "page": "API",
     "title": "DeIdentification.hash_salt_val!",
     "category": "method",
