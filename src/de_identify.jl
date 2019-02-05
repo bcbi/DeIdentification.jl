@@ -82,7 +82,7 @@ end
 
 struct DeIdDicts
     id::Dict{String, Int}
-    salt::Dict{Any, String}
+    salt::Dict{Int, String}
     dateshift::Dict{Int, Int}
     maxdays::Int
 end
@@ -95,7 +95,7 @@ Structure containing dictionaries for project level mappings
 - Research ID -> DateShift number of days
 - Research ID -> Salt value
 """
-DeIdDicts(maxdays) = DeIdDicts(Dict{String, Int}(), Dict{Any, String}(), Dict{Int, Int}(), maxdays)
+DeIdDicts(maxdays) = DeIdDicts(Dict{String, Int}(), Dict{Int, String}(), Dict{Int, Int}(), maxdays)
 
 
 """
@@ -104,7 +104,7 @@ DeIdDicts(maxdays) = DeIdDicts(Dict{String, Int}(), Dict{Any, String}(), Dict{In
 Salt and hash fields containing unique identifiers. Hashing is done in place
 using SHA256 and a 64-bit salt. Of note is that missing values are left missing.
 """
-function hash_salt_val!(dicts::DeIdDicts, val, pid)
+function hash_salt_val!(dicts::DeIdDicts, val, pid::Int)
 
     ismissing(val) && return val
 
@@ -126,7 +126,7 @@ Dateshift fields containing dates. Dates are shifted by a maximum number of days
 specified in the project config.  All of the dates for the same primary key are
 shifted the same number of days. Of note is that missing values are left missing.
 """
-function dateshift_val!(dicts::DeIdDicts, val::Union{Dates.Date, Dates.DateTime}, pid)
+function dateshift_val!(dicts::DeIdDicts, val::Union{Dates.Date, Dates.DateTime, Missing}, pid::Int)
 
     ismissing(val) && return val
 
@@ -149,7 +149,7 @@ Set the value passed (a hex string) to a human readable integer.  It generates
 a new ID if the value hasn't been seen before, otherwise the existing ID is used.
 """
 function setrid(val, dicts::DeIdDicts)
-    ismissing(val) && return val
+    @assert !ismissing(val) "Primary ID cannot be missing"
 
     if haskey(dicts.id, val)
         val = dicts.id[val]
