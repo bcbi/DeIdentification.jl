@@ -23,6 +23,8 @@ struct FileConfig
     filename::String
     colmap::Dict{Symbol, Type}
     rename_cols::Dict{Symbol,Symbol}
+    preprocess::Dict{Symbol, String}
+    postprocess::Dict{Symbol, String}
 end
 
 
@@ -67,13 +69,23 @@ function ProjectConfig(cfg_file::String)
             rename_dict[Symbol(pair["in"])] = Symbol(pair["out"])
         end
 
+        preprocess_dict = Dict{Symbol,String}()
+        for pair in get(ds, "preprocess_cols", [])
+            preprocess_dict[Symbol(pair["col"])] = pair["transform"]
+        end
+
+        postprocess_dict = Dict{Symbol,String}()
+        for pair in get(ds, "postprocess_cols", [])
+            postprocess_dict[Symbol(pair["col"])] = pair["transform"]
+        end
+
         col_map = Dict{Symbol, Type}()
         [col_map[col] = Hash       for col in getcols(ds, "hash_cols")]
         [col_map[col] = Salt       for col in getcols(ds, "salt_cols")]
         [col_map[col] = DateShift  for col in getcols(ds, "dateshift_cols")]
         [col_map[col] = Drop       for col in getcols(ds, "drop_cols")]
 
-        file_configs[i] = FileConfig(name, filename, col_map, rename_dict)
+        file_configs[i] = FileConfig(name, filename, col_map, rename_dict, preprocess_dict, postprocess_dict)
     end
 
     return ProjectConfig(cfg["project"], logfile, outdir, seed, file_configs, maxdays, pk, dateformat)
