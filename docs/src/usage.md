@@ -9,6 +9,10 @@ Data can be processed in several different ways depending on the desired output
 * Date Shifted: Shift date or datetime columns by a random value (all date/times related to the primary identifier will be shifted by the same random number)
 * Nothing: columns are not identifying data and do not need to be obfuscated
 
+Data can also be transformed before or after deidentification
+* Preprocess: before deidentification (e.g. hash), transform the data (e.g. make sure zip codes are 5 digit)
+* Postprocess: after deidentficiation (e.g. dateshift) transform the data (e.g. only include the year of the date)
+
 ## Config YAML
 To indicate how to de-identify the data, where the data lives, and other variables a
 configuration YAML file must be created by the user.
@@ -34,6 +38,10 @@ datasets:
     rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing
       - in: <col name 1a>                # required, current column name
         out: <col name 1b>               # required, future column name
+    # NOTE: VAL must be used to indicate the field value being transformed - no matter the field's type, VAL will be processed as a string
+    preprocess_cols:
+      - col: <col name>
+        transform: <expression>
     hash_cols:                    # optional, columns to be hashed
       - <col name 1>
       - <col name 2>
@@ -46,6 +54,10 @@ datasets:
     drop_cols:                    # optional, columns to be excluded from the de-identified data set
       - <col name 1>
       - <col name 2>
+    # NOTE: VAL must be used to indicate the field value being transformed - no matter the field's type, VAL will be processed as a string
+    postprocess_cols:
+      - col: <col name>
+        transform: <expression>
   - name: <dataset name 2>          # required, used to name output file
     filename: <file path>         # required, path for input CSV
     rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing
@@ -91,14 +103,20 @@ datasets:
       - "PatientPrimaryMRN"
     dateshift_cols:
       - "ArrivalDateandTime"
+    drop_cols:
+      - "EDDiagnosisTerminologyType"
   - name: pat
     filename: "./data/pat.csv"
-    # NOTE: renaming happens before any other operations (hashing, salting, dropping, dateshifting)
+    # NOTE: renaming happens before any other operations (pre-processing, hashing, salting, dropping, dateshifting, post-processing)
     rename_cols:
       - in: "EncounterEpicCSN"
         out: "CSN"
       - in: "PatientLastName"
         out: "last_name"
+    # NOTE: VAL must be used to indicate the field value being transformed - no matter the field's type, VAL will be processed as a string
+    preprocess_cols:
+      - col: "PatientPostalCode"
+        transform: "getindex(VAL, 1:5)"
     hash_cols:
       - "CSN"
       - "PatientPostalCode"
@@ -108,6 +126,10 @@ datasets:
       - "ArrivalDateandTime"
       - "DepartureDateandTime"
       - "PatientBirthDate"
+    # NOTE: VAL must be used to indicate the field value being transformed - no matter the field's type, VAL will be processed as a string
+    postprocess_cols:
+      - col: "PatientBirthDate"
+        transform: "max(2000, parse(Int, getindex(VAL, 1:4)))"
   - name: med
     filename: "./data/med.csv"
     rename_cols:

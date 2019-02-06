@@ -59,11 +59,14 @@ end
     dx = false
     salts = false
     df = DataFrame()
+    df_pat = DataFrame()
     for (root, dirs, files) in walkdir(outputpath)
         for file in files
             if occursin(r"^deid_dx_.*csv", file)
                 dx = true
                 df = CSV.read(joinpath(root,file))
+            elseif occursin(r"deid_pat_.*csv", file)
+                df_pat = CSV.read(joinpath(root,file))
             elseif occursin(r"salts_.*json", file)
                 salts = true
             end
@@ -85,8 +88,10 @@ end
 
     # test that dateshifted column was dateshifted
     @test df[1,:ArrivalDateandTime] != dfo[1,:ArrivalDateandTime]
-    println(Dates.days(abs(df[1,:ArrivalDateandTime] - dfo[1,:ArrivalDateandTime])))
     @test Dates.days(abs(df[1,:ArrivalDateandTime] - dfo[1,:ArrivalDateandTime])) <= proj_config.maxdays
+
+    # test the transforms work
+    @test length(string(df_pat[1,:PatientBirthDate])) == 4
 
     # test that files were created as expected
     @test dx == true

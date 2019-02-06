@@ -84,17 +84,35 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
                 # drop cols
                 action == Drop && continue
 
-                val = getoutput(dicts, action, getproperty(row, col), pid)
+                VAL = getproperty(row, col)
+
+                # apply pre-processing transform
+                if haskey(fc.preprocess, colname) && !ismissing(VAL)
+                    transform = fc.preprocess[colname]
+                    transform = replace(transform, "VAL" => "\"$VAL\"")
+                    expr = Meta.parse(transform)
+                    VAL = Core.eval(@__MODULE__, expr)
+                end
+
+                VAL = getoutput(dicts, action, VAL, pid)
 
                 if col == pcol
-                    val = pid
+                    VAL = pid
                 end
 
-                if eltype(val) <: String
-                    val = replace(val, "\"" => "\\\"")
+                # apply post-processing transform
+                if haskey(fc.postprocess, colname) && !ismissing(VAL)
+                    transform = fc.postprocess[colname]
+                    transform = replace(transform, "VAL" => "\"$VAL\"")
+                    expr = Meta.parse(transform)
+                    VAL = Core.eval(@__MODULE__, expr)
                 end
 
-                write(io, "\"$val\"")
+                if eltype(VAL) <: String
+                    VAL = replace(VAL, "\"" => "\\\"")
+                end
+
+                write(io, "\"$VAL\"")
                 if lastcol == col
                     write(io, '\n')
                 else
