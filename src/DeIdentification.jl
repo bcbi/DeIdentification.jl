@@ -25,7 +25,7 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
 
     # Initiate new file
     infile = CSV.File(fc.filename, dateformat = pc.dateformat)
-    outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * string(Dates.now()) * "csv")
+    outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * string(Dates.now()) * ".csv")
 
     ncol = length(infile.names)
     lastcol = infile.names[end]
