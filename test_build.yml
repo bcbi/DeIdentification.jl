@@ -1,0 +1,49 @@
+project: my_project
+project_seed: 666
+max_dateshift_days: 22
+log_path: ./logs
+output_path: ./somewhere_else
+date_format: y-m-dTH:M:S.s
+primary_id: CSN
+datasets:
+  - name: diagnosis
+    filename: ./test/data/dx.csv
+    rename_cols:
+      - in: EncounterEpicCSN
+        out: CSN
+    hash_cols:
+      - CSN
+      - PatientPrimaryMRN
+    dateshift_cols:
+      - ArrivalDateandTime
+    drop_cols:
+      - ArrivalDepartmentName
+  - name: rx
+    filename: ./test/data/med.csv
+    rename_cols:
+      - in: EncounterEpicCSN
+        out: CSN
+    hash_cols:
+      - CSN
+    dateshift_cols:
+      - ArrivalDateandTime
+    drop_cols:
+      - MedicationTherapeuticClass
+  - name: patient
+    filename: ./test/data/pat.csv
+    rename_cols:
+      - in: EncounterEpicCSN
+        out: CSN
+    hash_cols:
+      - CSN
+      - PatientPostalCode
+      - PatientPrimaryMRN
+    salt_cols:
+      - PatientLastName
+    dateshift_cols:
+      - ArrivalDateandTime
+      - DepartureDateandTime
+      - PatientBirthDate
+    drop_cols:
+      - ArrivalDepartmentName
+      - PatientSSN
