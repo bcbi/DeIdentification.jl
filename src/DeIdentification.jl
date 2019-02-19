@@ -1,6 +1,6 @@
 module DeIdentification
 
-export deidentify, ProjectConfig, DeIdDicts
+export deidentify, ProjectConfig, DeIdDicts, build_config
 
 import YAML
 import JSON
@@ -10,7 +10,11 @@ import Dates
 import SHA: bytes2hex, sha256
 import Random: shuffle, randstring, seed!
 import Memento
+import DataStructures: OrderedDict
+import REPL
+using REPL.TerminalMenus
 
+include("config_builder.jl")
 include("de_identify.jl")
 include("exporting.jl")
 
