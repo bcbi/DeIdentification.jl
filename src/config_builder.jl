@@ -1,13 +1,6 @@
 
 
-"""
-    user_input(prompt::String="")::String
-
-Read a string from STDIN. The trailing newline is stripped.
-
-The prompt string, if given, is printed to standard output without a
-trailing newline before reading input.
-"""
+# prompt user for input and return it or the default
 function user_input(prompt::String, default::String)
     print(prompt)
     response = readline(stdin)
@@ -172,9 +165,9 @@ function build_config(data_dir::String, config_file::String)
             f = CSV.File(joinpath(root, file), dateformat = yml["date_format"])
 
             for i in 1:length(f.names)
-                println()
+                println("")
                 orig_nm = string(f.names[i])
-                println("[ ", orig_nm, " - ", string(f.types[i]), " ]")
+                println("[  ", orig_nm, " - ", string(f.types[i]), "  ]")
 
                 # rename col?
                 col_nm = user_input("Column Name [$(orig_nm)]: ", orig_nm)
@@ -192,7 +185,11 @@ function build_config(data_dir::String, config_file::String)
         end
     end
 
+    println('\n', "All set! Writing your config file to ", config_file)
+
     write_yaml(config_file, yml)
+
+    println("You're file is ready - please review it and add any pre- or post-processing steps as needed.")
 
     return yml
 
