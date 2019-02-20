@@ -189,7 +189,7 @@ function build_config(data_dir::String, config_file::String)
 
     write_yaml(config_file, yml)
 
-    println("You're file is ready - please review it and add any pre- or post-processing steps as needed.")
+    println("Your file is ready - please review it and add any pre- or post-processing steps as needed.")
 
     return yml
 
