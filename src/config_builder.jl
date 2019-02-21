@@ -149,6 +149,7 @@ function build_config(data_dir::String, config_file::String)
         yml["primary_id"] = user_input("Primary ID Column Name: (REQUIRED - must be present in all datasets) ", "")
     end
 
+    println()
     println("Now let's look at the data sets")
     println("-------------------------------")
 
@@ -157,7 +158,7 @@ function build_config(data_dir::String, config_file::String)
 
         for file in files
 
-            nm = user_input("Dataset Name [$file]: ", file)
+            nm = user_input("Dataset Name [$(file[1:end-4])]: ", file[1:end-4]) # without '.csv'
             fnm = joinpath(root,file)
 
             d = get_ds_dict(nm, fnm)
