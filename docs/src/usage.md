@@ -15,7 +15,9 @@ Data can also be transformed before or after deidentification
 
 ## Config YAML
 To indicate how to de-identify the data, where the data lives, and other variables a
-configuration YAML file must be created by the user.
+configuration YAML file must be created by the user. There is a `build_config` utility function
+which can walk a user through file creation for the basic deidentification methods.  Pre- and post-
+processing must be manually added to the .yml file.
 
 ```
 # config.yml
