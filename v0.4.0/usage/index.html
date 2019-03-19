@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Guide · DeIdentification.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../assets/bcbi.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href="../index.html"><img class="logo" src="../assets/logo.png" alt="DeIdentification.jl logo"/></a><h1>DeIdentification.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li class="current"><a class="toctext" href>Guide</a><ul class="internal"><li><a class="toctext" href="#DeIdentification-Methods-1">DeIdentification Methods</a></li><li><a class="toctext" href="#Config-YAML-1">Config YAML</a></li><li><a class="toctext" href="#Running-the-Pipeline-1">Running the Pipeline</a></li></ul></li><li><a class="toctext" href="../documentation/">API</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Guide</a></li></ul><a class="edit-page" href="https://github.com/bcbi/DeIdentification.jl/blob/master/docs/src/usage.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Guide</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Usage-Guide-1" href="#Usage-Guide-1">Usage Guide</a></h1><h2><a class="nav-anchor" id="DeIdentification-Methods-1" href="#DeIdentification-Methods-1">DeIdentification Methods</a></h2><p>Data can be processed in several different ways depending on the desired output</p><ul><li>Dropped: drop the column as it is not needed for analysis or as identifier</li><li>Hashed: obfuscate the data in the column, but maintain referential integrity for joining data</li><li>Hashed and Salted: obfuscate the data in the column, but do not maintain referential integrity for joining data (useful for columns that would only be needed in re-identifying data)</li><li>Date Shifted: Shift date or datetime columns by a random value (all date/times related to the primary identifier will be shifted by the same random number), optionally add a static year value to all dates</li><li>Nothing: columns are not identifying data and do not need to be obfuscated</li></ul><p>Data can also be transformed before or after deidentification</p><ul><li>Preprocess: before deidentification (e.g. hash), transform the data (e.g. make sure zip codes are 5 digit)</li><li>Postprocess: after deidentficiation (e.g. dateshift) transform the data (e.g. only include the year of the date)</li></ul><h2><a class="nav-anchor" id="Config-YAML-1" href="#Config-YAML-1">Config YAML</a></h2><p>To indicate how to de-identify the data, where the data lives, and other variables a configuration YAML file must be created by the user. There is a <code>build_config</code> utility function which can walk a user through file creation for the basic deidentification methods.  Pre- and post- processing must be manually added to the .yml file.</p><pre><code class="language-none"># config.yml
+project:                &lt;project name&gt; # required
+project_seed:           &lt;int&gt;          # optional, but required for reproducibility
+log_path:               &lt;dir path&gt;     # required, must already be created
+max_dateshift_days:     &lt;int&gt;          # optional, default is 30
+dateshift_years:        &lt;int&gt;          # optional, default is 0
+output_path:            &lt;dir path&gt;     # required, must already be created
+
+# The primary ID must be present in all data sets, so that date shifting and salting work appropriately
+primary_id: &lt;column name&gt;       # required
+
+# Default date format is &quot;y/m/d H:M:S&quot; (e.g. 1999/05/21 11:23:56) - see Dates.DateFormat for options
+date_format: &lt;Dates.DateFormat&gt;
+
+# 1 to n datasets must be present to de-identify
+datasets:
+  - name: &lt;dataset name 1&gt;          # required, used to name output file
+    filename: &lt;file path&gt;         # required, path for input CSV
+    rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing
+      - in: &lt;col name 1a&gt;                # required, current column name
+        out: &lt;col name 1b&gt;               # required, future column name
+    # NOTE: VAL must be used to indicate the field value being transformed - no matter the field&#39;s type, VAL will be processed as a string
+    preprocess_cols:
+      - col: &lt;col name&gt;
+        transform: &lt;expression&gt;
+    hash_cols:                    # optional, columns to be hashed
+      - &lt;col name 1&gt;
+      - &lt;col name 2&gt;
+    dateshift_cols:               # optional, columns to be dateshifted
+      - &lt;col name 1&gt;
+      - &lt;col name 2&gt;
+    salt_cols:                    # optional, columns to be hashed and salted
+      - &lt;col name 1&gt;
+      - &lt;col name 2&gt;
+    drop_cols:                    # optional, columns to be excluded from the de-identified data set
+      - &lt;col name 1&gt;
+      - &lt;col name 2&gt;
+    # NOTE: VAL must be used to indicate the field value being transformed - no matter the field&#39;s type, VAL will be processed as a string
+    postprocess_cols:
+      - col: &lt;col name&gt;
+        transform: &lt;expression&gt;
+  - name: &lt;dataset name 2&gt;          # required, used to name output file
+    filename: &lt;file path&gt;         # required, path for input CSV
+    rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing
+      - in: &lt;col name 1a&gt;                # required, current column name
+        out: &lt;col name 1b&gt;               # required, future column name
+    hash_cols:                    # optional, columns to be hashed
+      - &lt;col name 1&gt;
+      - &lt;col name 2&gt;
+    dateshift_cols:               # optional, columns to be dateshifted
+      - &lt;col name 1&gt;
+      - &lt;col name 2&gt;
+    salt_cols:                    # optional, columns to be hashed and salted
+      - &lt;col name 1&gt;
+      - &lt;col name 2&gt;
+    drop_cols:                    # optional, columns to be excluded from the de-identified data set
+      - &lt;col name 1&gt;
+      - &lt;col name 2&gt;</code></pre><h3><a class="nav-anchor" id="Example-Config-1" href="#Example-Config-1">Example Config</a></h3><pre><code class="language-YAML">project:                &quot;ehr&quot;
+project_seed:           42          # for reproducibility
+log_path:               &quot;./logs&quot;
+max_dateshift_days:     30
+dateshift_years:        100
+output_path:            &quot;./output&quot;
+
+# The primary ID must be present in all data sets, so that dateshifting and salting works appropriately
+primary_id: &quot;CSN&quot;
+
+# Default date format is &quot;y/m/d H:M:S&quot; (e.g. 1999/05/21 11:23:56) - see Dates.DateFormat for options
+date_format: &quot;y-m-dTH:M:S.s&quot;
+
+datasets:
+  - name: dx
+    filename: &quot;./data/dx.csv&quot;
+    rename_cols:
+      - in: &quot;EncounterEpicCSN&quot;
+        out: &quot;CSN&quot;
+    hash_cols:
+      - &quot;CSN&quot;
+      - &quot;PatientPrimaryMRN&quot;
+    dateshift_cols:
+      - &quot;ArrivalDateandTime&quot;
+    drop_cols:
+      - &quot;EDDiagnosisTerminologyType&quot;
+  - name: pat
+    filename: &quot;./data/pat.csv&quot;
+    # NOTE: renaming happens before any other operations (pre-processing, hashing, salting, dropping, dateshifting, post-processing)
+    rename_cols:
+      - in: &quot;EncounterEpicCSN&quot;
+        out: &quot;CSN&quot;
+      - in: &quot;PatientLastName&quot;
+        out: &quot;last_name&quot;
+    # NOTE: VAL must be used to indicate the field value being transformed - no matter the field&#39;s type, VAL will be processed as a string
+    preprocess_cols:
+      - col: &quot;PatientPostalCode&quot;
+        transform: &quot;getindex(VAL, 1:5)&quot;
+    hash_cols:
+      - &quot;CSN&quot;
+      - &quot;PatientPostalCode&quot;
+    salt_cols:
+      - &quot;last_name&quot;
+    dateshift_cols:
+      - &quot;ArrivalDateandTime&quot;
+      - &quot;DepartureDateandTime&quot;
+      - &quot;PatientBirthDate&quot;
+    # NOTE: VAL must be used to indicate the field value being transformed - no matter the field&#39;s type, VAL will be processed as a string
+    postprocess_cols:
+      - col: &quot;PatientBirthDate&quot;
+        transform: &quot;max(2000+100, parse(Int, getindex(VAL, 1:4)))&quot;
+  - name: med
+    filename: &quot;./data/med.csv&quot;
+    rename_cols:
+      - in: &quot;EncounterEpicCSN&quot;
+        out: &quot;CSN&quot;
+    hash_cols:
+      - &quot;CSN&quot;
+    dateshift_cols:
+      - &quot;ArrivalDateandTime&quot;
+    drop_cols:
+      - &quot;MedicationTherapeuticClass&quot;</code></pre><h2><a class="nav-anchor" id="Running-the-Pipeline-1" href="#Running-the-Pipeline-1">Running the Pipeline</a></h2><p>To de-identify a data set, pass the config YAML to the <code>deidentify</code> function.</p><pre><code class="language-julia">deidentify(&quot;./config.yml&quot;)</code></pre><p>This will read in the data, de-identify the data, write a log to file, and write the resulting data set to file.</p><p>The pipeline consists of three main steps:</p><ul><li>Read the configuration file and process the settings</li><li>De-identify and write the data set</li><li>Write the dictionaries with salts, dateshift values, and research IDs to files</li></ul><p>The <code>deidentify</code> function runs the three steps:</p><pre><code class="language-julia">proj_config = DeIdConfig(cfg_file)
+deid = DeIdentified(proj_config)</code></pre><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../documentation/"><span class="direction">Next</span><span class="title">API</span></a></footer></article></body></html>
