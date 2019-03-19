@@ -6,7 +6,7 @@ Data can be processed in several different ways depending on the desired output
 * Dropped: drop the column as it is not needed for analysis or as identifier
 * Hashed: obfuscate the data in the column, but maintain referential integrity for joining data
 * Hashed and Salted: obfuscate the data in the column, but do not maintain referential integrity for joining data (useful for columns that would only be needed in re-identifying data)
-* Date Shifted: Shift date or datetime columns by a random value (all date/times related to the primary identifier will be shifted by the same random number)
+* Date Shifted: Shift date or datetime columns by a random value (all date/times related to the primary identifier will be shifted by the same random number), optionally add a static year value to all dates
 * Nothing: columns are not identifying data and do not need to be obfuscated
 
 Data can also be transformed before or after deidentification
@@ -25,6 +25,7 @@ project:                <project name> # required
 project_seed:           <int>          # optional, but required for reproducibility
 log_path:               <dir path>     # required, must already be created
 max_dateshift_days:     <int>          # optional, default is 30
+dateshift_years:        <int>          # optional, default is 0
 output_path:            <dir path>     # required, must already be created
 
 # The primary ID must be present in all data sets, so that date shifting and salting work appropriately
@@ -86,6 +87,7 @@ project:                "ehr"
 project_seed:           42          # for reproducibility
 log_path:               "./logs"
 max_dateshift_days:     30
+dateshift_years:        100
 output_path:            "./output"
 
 # The primary ID must be present in all data sets, so that dateshifting and salting works appropriately
@@ -131,7 +133,7 @@ datasets:
     # NOTE: VAL must be used to indicate the field value being transformed - no matter the field's type, VAL will be processed as a string
     postprocess_cols:
       - col: "PatientBirthDate"
-        transform: "max(2000, parse(Int, getindex(VAL, 1:4)))"
+        transform: "max(2000+100, parse(Int, getindex(VAL, 1:4)))"
   - name: med
     filename: "./data/med.csv"
     rename_cols:
