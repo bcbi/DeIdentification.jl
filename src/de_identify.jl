@@ -35,6 +35,7 @@ struct ProjectConfig
     seed::Int
     file_configs::Array{FileConfig,1}
     maxdays::Int
+    shiftyears::Int
     primary_id::Symbol
     dateformat::String
 end
@@ -56,6 +57,7 @@ function ProjectConfig(cfg_file::String)
 
     seed = get(cfg, "project_seed", rand(1:1000))
     maxdays = get(cfg, "max_dateshift_days", 30)
+    shiftyears = get(cfg, "dateshift_years", 0)
 
     # initialize File Configs for data sets
     file_configs = Array{FileConfig,1}(undef, num_file)
@@ -88,7 +90,7 @@ function ProjectConfig(cfg_file::String)
         file_configs[i] = FileConfig(name, filename, col_map, rename_dict, preprocess_dict, postprocess_dict)
     end
 
-    return ProjectConfig(cfg["project"], logfile, outdir, seed, file_configs, maxdays, pk, dateformat)
+    return ProjectConfig(cfg["project"], logfile, outdir, seed, file_configs, maxdays, shiftyears, pk, dateformat)
 end
 
 
@@ -97,6 +99,7 @@ struct DeIdDicts
     salt::Dict{Int, String}
     dateshift::Dict{Int, Int}
     maxdays::Int
+    shiftyears::Int
 end
 
 """
@@ -107,7 +110,7 @@ Structure containing dictionaries for project level mappings
 - Research ID -> DateShift number of days
 - Research ID -> Salt value
 """
-DeIdDicts(maxdays) = DeIdDicts(Dict{String, Int}(), Dict{Int, String}(), Dict{Int, Int}(), maxdays)
+DeIdDicts(maxdays, shiftyears) = DeIdDicts(Dict{String, Int}(), Dict{Int, String}(), Dict{Int, Int}(), maxdays, shiftyears)
 
 
 """
@@ -150,7 +153,7 @@ function dateshift_val!(dicts::DeIdDicts, val::Union{Dates.Date, Dates.DateTime,
         dicts.dateshift[pid] = n_days
     end
 
-    return val + Dates.Day(n_days)
+    return val + Dates.Day(n_days) + Dates.Year(dicts.shiftyears)
 
 end
 

@@ -36,7 +36,7 @@ end
     ids2 = [6, 5, 3, 4, 5]
 
     # Check hashing and research ID generation
-    dicts = DeIdDicts(30)
+    dicts = DeIdDicts(30, 100)
     hash1 = map( x-> DeIdentification.getoutput(dicts, DeIdentification.Hash, x, 0), ids1)
     hash2 = map( x-> DeIdentification.getoutput(dicts, DeIdentification.Hash, x, 0), ids2)
 
@@ -88,7 +88,8 @@ end
 
     # test that dateshifted column was dateshifted
     @test df[1,:ArrivalDateandTime] != dfo[1,:ArrivalDateandTime]
-    @test Dates.days(abs(df[1,:ArrivalDateandTime] - dfo[1,:ArrivalDateandTime])) <= proj_config.maxdays
+    @test Dates.days(abs(df[1,:ArrivalDateandTime] - dfo[1,:ArrivalDateandTime])) <= proj_config.maxdays + Dates.days(Dates.Year(proj_config.shiftyears))
+    @test isapprox(Dates.days(abs(df[1,:ArrivalDateandTime] - dfo[1,:ArrivalDateandTime]))/365, proj_config.shiftyears, atol = 1.0)
 
     # test the transforms work
     @test length(string(df_pat[1,:PatientBirthDate])) == 4
