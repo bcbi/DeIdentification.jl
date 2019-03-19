@@ -116,7 +116,7 @@ function build_config(data_dir::String, config_file::String)
     end
 
     if !isdir(data_dir)
-        @error "data_dir must be a directory containing datasets to be de-identified"
+        throw(ErrorException("data_dir must be a directory containing datasets to be de-identified"))
     end
 
     println("DeIdentification Config Builder")
@@ -140,6 +140,7 @@ function build_config(data_dir::String, config_file::String)
     yml["project"] = user_input("Project name [$(splitpath(data_dir)[end])]: ", splitpath(data_dir)[end])
     yml["project_seed"] = user_input("Project seed [123]: (used for reproducibility) ", "123")
     yml["max_dateshift_days"] = user_input("Maximum Date Shift Days [30]: ", "30")
+    yml["dateshift_years"] = user_input("Years to add to all dates [0]: ", "0")
     yml["log_path"] = user_input("Path for logs [./logs]: ", "./logs")
     yml["output_path"] = user_input("Path for output files [./output]: ", "./output")
     yml["date_format"] = user_input("Input date format [y/m/d H:M:S]: ", "y/m/d H:M:S")
