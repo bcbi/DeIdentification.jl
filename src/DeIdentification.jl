@@ -143,7 +143,7 @@ digest of the original primary ID to our new research IDs.
 """
 function deidentify(cfg::ProjectConfig)
     num_files = length(cfg.file_configs)
-    dicts = DeIdDicts(cfg.maxdays)
+    dicts = DeIdDicts(cfg.maxdays, cfg.shiftyears)
 
     # Set up our top-level logger
     logger = Memento.getlogger("deidentify")
