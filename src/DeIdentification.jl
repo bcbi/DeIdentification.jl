@@ -3,6 +3,7 @@ module DeIdentification
 export deidentify, ProjectConfig, DeIdDicts, build_config
 
 import YAML
+import Glob
 import JSON
 import Tables
 import CSV
@@ -154,6 +155,7 @@ function deidentify(cfg::ProjectConfig)
 
     Memento.info(logger, "$(Dates.now()) Setting seed for project $(cfg.name)")
     seed!(cfg.seed)
+
 
     for (i, fc) in enumerate(cfg.file_configs)
         Memento.info(logger, "$(Dates.now()) ====================== Processing $(fc.name) ======================")
