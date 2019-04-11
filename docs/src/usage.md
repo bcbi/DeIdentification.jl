@@ -17,7 +17,11 @@ Data can also be transformed before or after deidentification
 To indicate how to de-identify the data, where the data lives, and other variables a
 configuration YAML file must be created by the user. There is a `build_config` utility function
 which can walk a user through file creation for the basic deidentification methods.  Pre- and post-
-processing must be manually added to the .yml file.
+processing must be manually added to the .yml file.  
+It's possible to combine different `datasets` in the same config file, each `dataset`
+will follow the set of rules defined in the dataset block. In addition, multiple
+files of the same dataset can be processed at the same time by using Glob patterns
+in the `filename` field instead of the full file path.
 
 ```
 # config.yml
@@ -37,7 +41,7 @@ date_format: <Dates.DateFormat>
 # 1 to n datasets must be present to de-identify
 datasets:
   - name: <dataset name 1>          # required, used to name output file
-    filename: <file path>         # required, path for input CSV
+    filename: <file path / glob pattern>         # required, path for input CSV, or Glob pattern for input files in folder.
     rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing
       - in: <col name 1a>                # required, current column name
         out: <col name 1b>               # required, future column name
@@ -62,7 +66,7 @@ datasets:
       - col: <col name>
         transform: <expression>
   - name: <dataset name 2>          # required, used to name output file
-    filename: <file path>         # required, path for input CSV
+    filename: <file path / glob pattern>         # required, path for input CSV, or Glob pattern for input files in folder.
     rename_cols:                  # optional, useful if columns used in joining have different names, renaming occurs before any other processing
       - in: <col name 1a>                # required, current column name
         out: <col name 1b>               # required, future column name
@@ -98,7 +102,7 @@ date_format: "y-m-dTH:M:S.s"
 
 datasets:
   - name: dx
-    filename: "./data/dx.csv"
+    filename: "./data/dx_files/*" # Glob pattern option
     rename_cols:
       - in: "EncounterEpicCSN"
         out: "CSN"
