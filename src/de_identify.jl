@@ -64,30 +64,31 @@ function ProjectConfig(cfg_file::String)
 
     # populate File Configs
     for (i, ds) in enumerate(cfg["datasets"])
+        
+        name = ds["name"]
+        rename_dict = Dict{Symbol,Symbol}()
+        for pair in get(ds, "rename_cols", [])
+            rename_dict[Symbol(pair["in"])] = Symbol(pair["out"])
+        end
+
+        preprocess_dict = Dict{Symbol,String}()
+        for pair in get(ds, "preprocess_cols", [])
+            preprocess_dict[Symbol(pair["col"])] = pair["transform"]
+        end
+
+        postprocess_dict = Dict{Symbol,String}()
+        for pair in get(ds, "postprocess_cols", [])
+            postprocess_dict[Symbol(pair["col"])] = pair["transform"]
+        end
+
+        col_map = Dict{Symbol, Type}()
+        [col_map[col] = Hash       for col in getcols(ds, "hash_cols")]
+        [col_map[col] = Salt       for col in getcols(ds, "salt_cols")]
+        [col_map[col] = DateShift  for col in getcols(ds, "dateshift_cols")]
+        [col_map[col] = Drop       for col in getcols(ds, "drop_cols")]
+
         for (j, f) in enumerate(Glob.glob(ds["filename"]))
-            name = ds["name"]
             filename = f
-            rename_dict = Dict{Symbol,Symbol}()
-            for pair in get(ds, "rename_cols", [])
-                rename_dict[Symbol(pair["in"])] = Symbol(pair["out"])
-            end
-
-            preprocess_dict = Dict{Symbol,String}()
-            for pair in get(ds, "preprocess_cols", [])
-                preprocess_dict[Symbol(pair["col"])] = pair["transform"]
-            end
-
-            postprocess_dict = Dict{Symbol,String}()
-            for pair in get(ds, "postprocess_cols", [])
-                postprocess_dict[Symbol(pair["col"])] = pair["transform"]
-            end
-
-            col_map = Dict{Symbol, Type}()
-            [col_map[col] = Hash       for col in getcols(ds, "hash_cols")]
-            [col_map[col] = Salt       for col in getcols(ds, "salt_cols")]
-            [col_map[col] = DateShift  for col in getcols(ds, "dateshift_cols")]
-            [col_map[col] = Drop       for col in getcols(ds, "drop_cols")]
-
             file_config = FileConfig(name, filename, col_map, rename_dict, preprocess_dict, postprocess_dict)
             push!(file_configs, file_config)
         end
