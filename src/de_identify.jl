@@ -60,12 +60,12 @@ function ProjectConfig(cfg_file::String)
     shiftyears = get(cfg, "dateshift_years", 0)
 
     # initialize File Configs for data sets
-    file_configs = Array{FileConfig,1}(undef, num_file)
+    file_configs = Array{FileConfig,1}(undef, 0)
 
     # populate File Configs
     for (i, ds) in enumerate(cfg["datasets"])
+        
         name = ds["name"]
-        filename = ds["filename"]
         rename_dict = Dict{Symbol,Symbol}()
         for pair in get(ds, "rename_cols", [])
             rename_dict[Symbol(pair["in"])] = Symbol(pair["out"])
@@ -87,7 +87,11 @@ function ProjectConfig(cfg_file::String)
         [col_map[col] = DateShift  for col in getcols(ds, "dateshift_cols")]
         [col_map[col] = Drop       for col in getcols(ds, "drop_cols")]
 
-        file_configs[i] = FileConfig(name, filename, col_map, rename_dict, preprocess_dict, postprocess_dict)
+        for (j, f) in enumerate(Glob.glob(ds["filename"]))
+            filename = f
+            file_config = FileConfig(name, filename, col_map, rename_dict, preprocess_dict, postprocess_dict)
+            push!(file_configs, file_config)
+        end
     end
 
     return ProjectConfig(cfg["project"], logfile, outdir, seed, file_configs, maxdays, shiftyears, pk, dateformat)

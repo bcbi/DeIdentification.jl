@@ -8,6 +8,7 @@ using Test
 
 # SET UP COMMON TEST VARIABLES AND ENVIRONMENT
 test_file = "ehr_data.yml"
+test_file_batch= "ehr_data_batch.yml"
 logpath = joinpath(@__DIR__, "logs")
 outputpath = joinpath(@__DIR__, "output")
 
@@ -50,6 +51,7 @@ end
 
 @testset "integration_tests" begin
     proj_config = ProjectConfig(test_file)
+    proj_config_batch = ProjectConfig(test_file_batch)
     deid = deidentify(proj_config)
 
     @test typeof(deid) == DeIdDicts
@@ -97,6 +99,10 @@ end
     # test that files were created as expected
     @test dx == true
     @test salts == true
+
+    # test that when config has glob pattern in file name, ProjectConfig gets all files in directory.
+    @test length(proj_config_batch.file_configs) == 9
+    @test split(proj_config_batch.file_configs[3].filename, "/")[end] == "dx_2.csv"
 end
 
 @testset "primary identifiter" begin
