@@ -1,7 +1,7 @@
 name = "DeIdentification"
 uuid = "b905b068-7150-5b22-bc23-80596c88c6a6"
 authors = ["Brown Center for Biomedical Informatics"]
-version = "0.5.0"
+version = "0.5.1"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
