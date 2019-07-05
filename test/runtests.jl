@@ -15,8 +15,8 @@ outputpath = joinpath(@__DIR__, "output")
 isdir(logpath) && rm(logpath, recursive=true)
 isdir(outputpath) && rm(outputpath, recursive=true)
 
-mkdir(joinpath(@__DIR__, "logs"))
-mkdir(joinpath(@__DIR__, "output"))
+mkdir(logpath)
+mkdir(outputpath)
 # ----------------------------
 
 @testset "config creation" begin
@@ -102,7 +102,7 @@ end
 
     # test that when config has glob pattern in file name, ProjectConfig gets all files in directory.
     @test length(proj_config_batch.file_configs) == 9
-    @test split(proj_config_batch.file_configs[3].filename, "/")[end] == "dx_2.csv"
+    @test split(proj_config_batch.file_configs[3].filename, Sys.iswindows() ? "\\" : "/")[end] == "dx_2.csv"
 end
 
 @testset "primary identifiter" begin
@@ -124,6 +124,13 @@ end
 end
 
 # TEAR DOWN
-rm(logpath, recursive=true)
-rm(outputpath, recursive=true)
+try
+    rm(logpath, recursive=true, force=true)
+catch e
+end
+
+try
+    rm(outputpath, recursive=true, force=true)
+catch e
+end
 # --------------------------
