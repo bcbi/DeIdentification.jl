@@ -65,16 +65,13 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
         end
     end
 
-    schema = Tables.Schema(new_names, new_types)
-
-
     Memento.info(logger, "$(Dates.now()) Checking for primary column")
     @assert pk==true "Primary ID must be present in file"
 
-    # write header to file
-    CSV.write(schema, [], outfile)
-
-    open(outfile, "a") do io
+    open(outfile, "w") do io
+        # write header to file
+        CSV.printheader(
+            io, [string(n) for n in new_names], ",", '"', '"', '"', '\n')
 
         # Process each row
         for row in infile
