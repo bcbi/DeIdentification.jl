@@ -18,6 +18,7 @@ using REPL.TerminalMenus
 include("config_builder.jl")
 include("de_identify.jl")
 include("exporting.jl")
+include("utils.jl")
 
 """
     deid_file!(dicts, file_config, project_config, logger)
@@ -30,7 +31,7 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
 
     # Initiate new file
     infile = CSV.File(fc.filename, dateformat = pc.dateformat)
-    outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * string(Dates.now()) * ".csv")
+    outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * getcurrentdate() * ".csv")
 
     ncol = length(infile.names)
     lastcol = infile.names[end]
