@@ -18,6 +18,7 @@ using REPL.TerminalMenus
 include("config_builder.jl")
 include("de_identify.jl")
 include("exporting.jl")
+include("utils.jl")
 
 """
     deid_file!(dicts, file_config, project_config, logger)
@@ -30,7 +31,7 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
 
     # Initiate new file
     infile = CSV.File(fc.filename, dateformat = pc.dateformat)
-    outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * string(Dates.now()) * ".csv")
+    outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * getcurrentdate() * ".csv")
 
     ncol = length(infile.names)
     lastcol = infile.names[end]
@@ -65,16 +66,13 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
         end
     end
 
-    schema = Tables.Schema(new_names, new_types)
-
-
     Memento.info(logger, "$(Dates.now()) Checking for primary column")
     @assert pk==true "Primary ID must be present in file"
 
-    # write header to file
-    CSV.write(schema, [], outfile)
-
-    open(outfile, "a") do io
+    open(outfile, "w") do io
+        # write header to file
+        CSV.printheader(
+            io, [string(n) for n in new_names], ",", '"', '"', '"', '\n')
 
         # Process each row
         for row in infile
