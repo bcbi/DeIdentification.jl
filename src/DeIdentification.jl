@@ -144,6 +144,16 @@ function deidentify(cfg::ProjectConfig)
     num_files = length(cfg.file_configs)
     dicts = DeIdDicts(cfg.maxdays, cfg.shiftyears)
 
+    if !isdir(cfg.outdir)
+        # mkpath also creates any intermediate paths
+        mkpath(cfg.outdir)
+    end
+
+    logdir = dirname(cfg.logfile)
+    if !isdir(logdir)
+        mkpath(logdir)
+    end
+
     # Set up our top-level logger
     logger = Memento.getlogger("deidentify")
     logfile_roller = Memento.FileRoller(cfg.logfile)

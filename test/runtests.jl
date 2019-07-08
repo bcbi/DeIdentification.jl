@@ -3,6 +3,7 @@ using CSV
 using YAML
 using DataFrames
 using Dates
+using Memento
 
 using Test
 
@@ -11,12 +12,27 @@ test_file = "ehr_data.yml"
 test_file_batch= "ehr_data_batch.yml"
 logpath = joinpath(@__DIR__, "logs")
 outputpath = joinpath(@__DIR__, "output")
+basepath_not_created = joinpath(@__DIR__, "path")
+logpath_not_created = joinpath(basepath_not_created, "to", "new", "logs")
+outputpath_not_created = joinpath(basepath_not_created, "to", "new", "output")
 
-isdir(logpath) && rm(logpath, recursive=true)
-isdir(outputpath) && rm(outputpath, recursive=true)
+try
+    isdir(logpath) && rm(logpath, recursive=true, force=true)
+catch
+end
 
-mkdir(logpath)
-mkdir(outputpath)
+try
+    isdir(outputpath) && rm(outputpath, recursive=true, force=true)
+catch
+end
+
+try
+    isdir(basepath_not_created) && rm(basepath_not_created, recursive=true, force=true)
+catch
+end
+
+mkpath(logpath)
+mkpath(outputpath)
 # ----------------------------
 
 @testset "config creation" begin
@@ -123,14 +139,30 @@ end
     @test deid1.salt != deid2.salt
 end
 
+@testset "create output directories" begin
+    cfg = ProjectConfig("ehr_data_alt_paths.yml")
+    deid = deidentify(cfg)
+
+    @test isfile(joinpath(logpath_not_created,"ehr.log.0001"))
+    @test isdir(joinpath(outputpath_not_created))
+end
+
 # TEAR DOWN
+# this is necessary to ensure directories are deleted on Windows
+GC.gc()
+
 try
     rm(logpath, recursive=true, force=true)
-catch e
+catch
 end
 
 try
     rm(outputpath, recursive=true, force=true)
-catch e
+catch
+end
+
+try
+    rm(joinpath(@__DIR__, "path"), recursive=true, force=true)
+catch
 end
 # --------------------------
