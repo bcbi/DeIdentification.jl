@@ -47,8 +47,25 @@ mkpath(outputpath)
     @test cfg_raw["datasets"][1]["name"] == cfg.file_configs[1].name
 end
 
-@testset "rid_generation" begin
+@testset "create config from csv" begin
+    config_file = joinpath(@__DIR__, "example_config.yml")
+    try
+        build_config_from_csv("example_config", joinpath(@__DIR__, "data_worksheet_fields.csv"))
 
+        config_raw = YAML.load_file(config_file)
+        @test config_raw["project"] == "example_config"
+        @test length(config_raw["datasets"]) == 11
+    finally
+        if isfile(config_file)
+            try
+                rm(config_file)
+            catch
+            end
+        end
+    end
+end
+
+@testset "rid generation" begin
     ids1 = [4, 6, 7, 3, 3, 5, 7]
     ids2 = [6, 5, 3, 4, 5]
 
@@ -65,7 +82,7 @@ end
 end
 
 
-@testset "integration_tests" begin
+@testset "integration tests" begin
     proj_config = ProjectConfig(test_file)
     proj_config_batch = ProjectConfig(test_file_batch)
     deid = deidentify(proj_config)

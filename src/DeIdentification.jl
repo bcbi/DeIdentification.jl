@@ -1,6 +1,6 @@
 module DeIdentification
 
-export deidentify, ProjectConfig, DeIdDicts, build_config
+export deidentify, ProjectConfig, DeIdDicts, build_config, build_config_from_csv
 
 import YAML
 import Glob
@@ -9,7 +9,7 @@ import Tables
 import CSV
 import Dates
 import SHA: bytes2hex, sha256
-import Random: shuffle, randstring, seed!
+import Random: shuffle, randstring, seed!, make_seed
 import Memento
 import DataStructures: OrderedDict
 import REPL
