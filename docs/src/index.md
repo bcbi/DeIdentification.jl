@@ -1,16 +1,16 @@
 # DeIdentification.jl
 
-A Julia package for de-identifying CSV data sets.
+A Julia package for de-identifying CSV data sets containing protected health information.
 
 ```@contents
 pages = [
     "Guide" => "usage.md",
     "API" => "documentation.md"
-    ]
+]
 ```
 
 ### Quick Notes:
-* Compatible with julia 1.0 and above
+* Compatible with Julia 1.0 and above
 * In your directory make sure to have the following sub-directories:
   * logs
   * output
