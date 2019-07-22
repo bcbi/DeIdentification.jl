@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Guide · DeIdentification.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../assets/bcbi.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href="../"><img class="logo" src="../assets/logo.png" alt="DeIdentification.jl logo"/></a><h1>DeIdentification.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li class="current"><a class="toctext" href>Guide</a><ul class="internal"><li><a class="toctext" href="#DeIdentification-Methods-1">DeIdentification Methods</a></li><li><a class="toctext" href="#Config-YAML-1">Config YAML</a></li><li><a class="toctext" href="#Running-the-Pipeline-1">Running the Pipeline</a></li></ul></li><li><a class="toctext" href="../documentation/">API</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Guide</a></li></ul><a class="edit-page" href="https://github.com/bcbi/DeIdentification.jl/blob/master/docs/src/usage.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Guide</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Usage-Guide-1" href="#Usage-Guide-1">Usage Guide</a></h1><h2><a class="nav-anchor" id="DeIdentification-Methods-1" href="#DeIdentification-Methods-1">DeIdentification Methods</a></h2><p>Data can be processed in several different ways depending on the desired output</p><ul><li>Dropped: drop the column as it is not needed for analysis or as identifier</li><li>Hashed: obfuscate the data in the column, but maintain referential integrity for joining data</li><li>Hashed and Salted: obfuscate the data in the column, but do not maintain referential integrity for joining data (useful for columns that would only be needed in re-identifying data)</li><li>Date Shifted: Shift date or datetime columns by a random value (all date/times related to the primary identifier will be shifted by the same random number), optionally add a static year value to all dates</li><li>Nothing: columns are not identifying data and do not need to be obfuscated</li></ul><p>Data can also be transformed before or after deidentification</p><ul><li>Preprocess: before deidentification (e.g. hash), transform the data (e.g. make sure zip codes are 5 digit)</li><li>Postprocess: after deidentficiation (e.g. dateshift) transform the data (e.g. only include the year of the date)</li></ul><h2><a class="nav-anchor" id="Config-YAML-1" href="#Config-YAML-1">Config YAML</a></h2><p>To indicate how to de-identify the data, where the data lives, and other variables a configuration YAML file must be created by the user. There is a <code>build_config</code> utility function which can walk a user through file creation for the basic deidentification methods.  Pre- and post- processing must be manually added to the .yml file.   It&#39;s possible to combine different <code>datasets</code> in the same config file, each <code>dataset</code> will follow the set of rules defined in the dataset block. In addition, multiple files of the same dataset can be processed at the same time by using Glob patterns in the <code>filename</code> field instead of the full file path.</p><pre><code class="language-none"># config.yml
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Guide · DeIdentification.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../assets/bcbi.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href="../"><img class="logo" src="../assets/logo.png" alt="DeIdentification.jl logo"/></a><h1>DeIdentification.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li class="current"><a class="toctext" href>Guide</a><ul class="internal"><li><a class="toctext" href="#DeIdentification-Methods-1">DeIdentification Methods</a></li><li><a class="toctext" href="#Config-YAML-1">Config YAML</a></li></ul></li><li><a class="toctext" href="../documentation/">API</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Guide</a></li></ul><a class="edit-page" href="https://github.com/bcbi/DeIdentification.jl/blob/master/docs/src/usage.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Guide</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Usage-Guide-1" href="#Usage-Guide-1">Usage Guide</a></h1><h2><a class="nav-anchor" id="DeIdentification-Methods-1" href="#DeIdentification-Methods-1">DeIdentification Methods</a></h2><p>Data can be processed in several different ways depending on the desired output</p><ul><li><strong>Dropped</strong>: drop the column as it is not needed for analysis or as identifier</li><li><strong>Hashed</strong>: obfuscate the data in the column, but maintain referential integrity for joining data</li><li><strong>Hashed and Salted</strong>: obfuscate the data in the column, but do not maintain referential integrity for joining data (useful for columns that would only be needed in re-identifying data)</li><li><strong>Date Shifted</strong>: Shift date or datetime columns by a random value (all date/times related to the primary identifier will be shifted by the same random number), optionally add a static year value to all dates</li></ul><p>Data can also be transformed before or after deidentification</p><ul><li>Preprocess: before deidentification (e.g. hash), transform the data (e.g. make sure zip codes are 5 digit)</li><li>Postprocess: after deidentficiation (e.g. dateshift) transform the data (e.g. only include the year of the date)</li></ul><h2><a class="nav-anchor" id="Config-YAML-1" href="#Config-YAML-1">Config YAML</a></h2><p>To indicate how to de-identify the data, where the data lives, and other variables a configuration YAML file must be created by the user. There is a <code>build_config</code> utility function which can walk a user through file creation for the basic deidentification methods.  Pre- and post- processing must be manually added to the .yml file.   It&#39;s possible to combine different <code>datasets</code> in the same config file, each <code>dataset</code> will follow the set of rules defined in the dataset block. In addition, multiple files of the same dataset can be processed at the same time by using Glob patterns in the <code>filename</code> field instead of the full file path.</p><pre><code class="language-none"># config.yml
 project:                &lt;project name&gt; # required
 project_seed:           &lt;int&gt;          # optional, but required for reproducibility
 log_path:               &lt;dir path&gt;     # required, must already be created
@@ -10,7 +10,7 @@ output_path:            &lt;dir path&gt;     # required, must already be created
 # The primary ID must be present in all data sets, so that date shifting and salting work appropriately
 primary_id: &lt;column name&gt;       # required
 
-# Default date format is &quot;y/m/d H:M:S&quot; (e.g. 1999/05/21 11:23:56) - see Dates.DateFormat for options
+# Default date format is &quot;y-m-dTH:M:S.s&quot; (e.g. 1999-05-21T11:23:56.0123) - see Dates.DateFormat for options
 date_format: &lt;Dates.DateFormat&gt;
 
 # 1 to n datasets must be present to de-identify
@@ -66,7 +66,7 @@ output_path:            &quot;./output&quot;
 # The primary ID must be present in all data sets, so that dateshifting and salting works appropriately
 primary_id: &quot;CSN&quot;
 
-# Default date format is &quot;y/m/d H:M:S&quot; (e.g. 1999/05/21 11:23:56) - see Dates.DateFormat for options
+# Default date format is &quot;y-m-dTH:M:S.s&quot; (e.g. 1999-05-21T11:23:56.0000) - see Dates.DateFormat for options
 date_format: &quot;y-m-dTH:M:S.s&quot;
 
 datasets:
@@ -117,5 +117,370 @@ datasets:
     dateshift_cols:
       - &quot;ArrivalDateandTime&quot;
     drop_cols:
-      - &quot;MedicationTherapeuticClass&quot;</code></pre><h2><a class="nav-anchor" id="Running-the-Pipeline-1" href="#Running-the-Pipeline-1">Running the Pipeline</a></h2><p>To de-identify a data set, pass the config YAML to the <code>deidentify</code> function.</p><pre><code class="language-julia">deidentify(&quot;./config.yml&quot;)</code></pre><p>This will read in the data, de-identify the data, write a log to file, and write the resulting data set to file.</p><p>The pipeline consists of three main steps:</p><ul><li>Read the configuration file and process the settings</li><li>De-identify and write the data set</li><li>Write the dictionaries with salts, dateshift values, and research IDs to files</li></ul><p>The <code>deidentify</code> function runs the three steps:</p><pre><code class="language-julia">proj_config = DeIdConfig(cfg_file)
-deid = DeIdentified(proj_config)</code></pre><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../documentation/"><span class="direction">Next</span><span class="title">API</span></a></footer></article></body></html>
+      - &quot;MedicationTherapeuticClass&quot;</code></pre><h3><a class="nav-anchor" id="Generating-the-Configuration-1" href="#Generating-the-Configuration-1">Generating the Configuration</a></h3><p>Although the configuration YAML file can be put together by hand, there are also tools to help assist in the generation of a configuration file under different circumstances. Note, however, that in any circumstance, it is likely necessary to hand-edit the generated YAML file after processing to ensure everything is correct and to setup any pre- and post-processing necessary.</p><h4><a class="nav-anchor" id="Build-Configuration-Interactively-1" href="#Build-Configuration-Interactively-1">Build Configuration Interactively</a></h4><p>If you have all the necessary data already in CSV format, you can use the <code>build_config</code> function to generate the configuration. This will prompt you for the necessary configuration actions for each column found in the CSV files. An interactive session might look like the below:</p><h5><a class="nav-anchor" id="Example-Interactive-Session-1" href="#Example-Interactive-Session-1">Example Interactive Session</a></h5><pre><code class="language-none">julia --project=@. -e &#39;using DeIdentification; build_config(&quot;./test/data&quot;, &quot;test.yaml&quot;)&#39;
+
+DeIdentification Config Builder
+===============================
+Follow the prompts to build a draft of your config file using the datasets.
+The prompts are all written as &#39;Prompt [default]: &#39;. If there is no default
+the field is required.
+NOTE: this builder will not ask about pre- or post-processing, add after if needed
+Ready to get started? [y]
+Great! Here we go...
+
+Let&#39;s start with the project level info
+---------------------------------------
+Project name [data]:
+Project seed [2809867404]: (used for reproducibility)
+Maximum Date Shift Days [30]:
+Years to add to all dates [0]:
+Path for logs [./logs]:
+Path for output files [./output]:
+Input date format [y-m-dTH:M:S.s]:
+Primary ID Column Name: (REQUIRED - must be present in all datasets) CSN
+
+Now let&#39;s look at the data sets
+-------------------------------
+Dataset Name [dx]:
+
+[  ArrivalDateandTime - Dates.DateTime  ]
+Column Name [ArrivalDateandTime]:
+Deidentification Method:
+   Nothing
+   Hash
+   Hash &amp; Salt
+ &gt; Date Shift
+   Drop
+
+[  EncounterBrownCSN - Int64  ]
+Column Name [EncounterBrownCSN]: CSN
+Deidentification Method:
+   Nothing
+ &gt; Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  DiagnosisTerminologyType - CSV.PooledString  ]
+Column Name [DiagnosisTerminologyType]:
+Deidentification Method:
+ &gt; Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  DiagnosisTerminologyValue - CSV.PooledString  ]
+Column Name [DiagnosisTerminologyValue]:
+Deidentification Method:
+ &gt; Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  PatientPrimaryMRN - Int64  ]
+Column Name [PatientPrimaryMRN]:
+Deidentification Method:
+   Nothing
+ &gt; Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  ArrivalDepartmentName - CSV.PooledString  ]
+Column Name [ArrivalDepartmentName]:
+Deidentification Method:
+ &gt; Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+Dataset Name [med]:
+
+[  EncounterBrownCSN - Int64  ]
+Column Name [EncounterBrownCSN]: CSN
+Deidentification Method:
+   Nothing
+ &gt; Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  ArrivalDateandTime - Dates.DateTime  ]
+Column Name [ArrivalDateandTime]:
+Deidentification Method:
+   Nothing
+   Hash
+   Hash &amp; Salt
+ &gt; Date Shift
+   Drop
+
+[  MedicationName - CSV.PooledString  ]
+Column Name [MedicationName]:
+Deidentification Method:
+ &gt; Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  MedicationTherapeuticClass - Int64  ]
+Column Name [MedicationTherapeuticClass]:
+Deidentification Method:
+ &gt; Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+Dataset Name [pat]:
+
+[  ArrivalDateandTime - Dates.DateTime  ]
+Column Name [ArrivalDateandTime]:
+Deidentification Method:
+   Nothing
+   Hash
+   Hash &amp; Salt
+ &gt; Date Shift
+   Drop
+
+[  ArrivalDepartmentName - CSV.PooledString  ]
+Column Name [ArrivalDepartmentName]:
+Deidentification Method:
+ &gt; Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  DepartureDateandTime - Dates.DateTime  ]
+Column Name [DepartureDateandTime]:
+Deidentification Method:
+   Nothing
+   Hash
+   Hash &amp; Salt
+ &gt; Date Shift
+   Drop
+
+[  EncounterBrownCSN - Int64  ]
+Column Name [EncounterBrownCSN]: CSN
+Deidentification Method:
+   Nothing
+ &gt; Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  PatientBirthDate - Dates.DateTime  ]
+Column Name [PatientBirthDate]:
+Deidentification Method:
+   Nothing
+   Hash
+   Hash &amp; Salt
+ &gt; Date Shift
+   Drop
+
+[  PatientLastName - String  ]
+Column Name [PatientLastName]:
+Deidentification Method:
+   Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+ &gt; Drop
+
+[  PatientPostalCode - String  ]
+Column Name [PatientPostalCode]:
+Deidentification Method:
+   Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+ &gt; Drop
+
+[  PatientPrimaryMRN - Int64  ]
+Column Name [PatientPrimaryMRN]:
+Deidentification Method:
+   Nothing
+ &gt; Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  PatientSex - CSV.PooledString  ]
+Column Name [PatientSex]:
+Deidentification Method:
+ &gt; Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+[  PatientSSN - String  ]
+Column Name [PatientSSN]:
+Deidentification Method:
+ &gt; Nothing
+   Hash
+   Hash &amp; Salt
+   Date Shift
+   Drop
+
+
+All set! Writing your config file to test.yaml
+Your file is ready - please review it and add any pre- or post-processing steps as needed.</code></pre><h4><a class="nav-anchor" id="Build-Configuration-from-a-CSV-1" href="#Build-Configuration-from-a-CSV-1">Build Configuration from a CSV</a></h4><p>The configuration from a CSV file is designed to work with BCBI&#39;s data request worksheet. However, it simply requires a CSV file that contains at least three fields:</p><ol><li><strong>Source Table</strong>: The name of the CSV file that will contain the data</li><li><strong>Field</strong>: The name of the field to map</li><li><strong>Method</strong>: The DeIdentification method which can be any of <strong>Hash</strong>, <strong>Hash &amp; Salt</strong>, <strong>Hash - Research ID</strong>, <strong>Date Shift</strong>, or <strong>Drop</strong>. Methods not matching these names will be ignored. Note that a field marked <strong>Hash - Research ID</strong> will be treated as the primary id for the dataset and needs to have the same name in all data sources.</li></ol><p>Other fields or method values will be ignored by the tool. It can be run by using the <code>build_config_from_csv</code> function.</p><p>A valid CSV file designed to be consumed by this tool might look like this:</p><pre><code class="language-none"> Source Universe,Source Table,Field,PHI,Method
+BCBI Clinic Visits,BCBI Clinic Detail,Patient Id,Y,Hash - Research ID
+BCBI Clinic Visits,BCBI Clinic Detail,BCBI Clinic Arrival Method,N,
+BCBI Clinic Visits,BCBI Clinic Detail,BCBI Clinic Discharge Disposition,N,
+BCBI Clinic Visits,BCBI Clinic Detail,BCBI Clinic Acuity Level,N,
+BCBI Clinic Visits,BCBI Clinic Detail,BCBI Clinic Level Of Care,N,
+BCBI Clinic Visits,BCBI Clinic Detail,BCBI Clinic Financial Class,N,
+BCBI Clinic Visits,BCBI Clinic Detail,BCBI Clinic Facility Level Of Service,N,
+BCBI Clinic Visits,BCBI Clinic Detail,BCBI Clinic Professional Level Of Service,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Clinic Visit Encounter Csn,Y,Hash
+BCBI Clinic Visits,BCBI Clinic Detail,Clinic Department Name,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Clinic Department Id,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Primary Clinic Diagnosis Name,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Primary Clinic Diagnosis Id,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Primary Chief Complaint Name,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Primary Chief Complaint Id,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Encounter Type,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Encounter Admission Type,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Encounter Admission Source,N,
+BCBI Clinic Visits,BCBI Clinic Detail,Encounter Date,Y,Date Shift
+BCBI Clinic Visits,BCBI Clinic Detail,Encounter End Instant,Y,Date Shift
+BCBI Clinic Visits,BCBI Clinic Detail,Encounter Admission Instant,Y,Date Shift
+BCBI Clinic Visits,BCBI Clinic Detail,Encounter Discharge Instant,Y,Date Shift
+BCBI Clinic Visits,BCBI Clinic Detail,First Trauma Start Instant,Y,Date Shift
+BCBI Clinic Visits,BCBI Clinic Detail,First Trauma End Instant,Y,Date Shift
+BCBI Clinic Visits,BCBI Clinic Detail,Arrival Instant,Y,Date Shift
+BCBI Clinic Visits,BCBI Clinic Detail,Departure Instant,Y,Date Shift
+,,,,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Id,Y,Hash - Research ID
+BCBI Clinic Visits,BCBI Clinic Demographics,Clinic Visit Encounter Csn,Y,Hash
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Name,Y,Hash &amp; Salt
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient First Name,Y,Hash &amp; Salt
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Middle Name,Y,Hash &amp; Salt
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Last Name,Y,Hash &amp; Salt
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Sex,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Preferred Language,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Ethnicity,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient First Race,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Second Race,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Third Race,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Fourth Race,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Fifth Race,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Multi Racial?,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Birth Date,Y,Date Shift
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Death Instant,Y,Date Shift
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Death Location,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Status,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Address,Y,Drop
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient City,Y,Drop
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient County,Y,Drop
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient State Or Province,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Country,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Postal Code,Y,Hash
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Sexual Orientation,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Marital Status,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Religion,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Smoking Status,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Highest Level Of Education,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Is Cancer Patient?,N,
+BCBI Clinic Visits,BCBI Clinic Demographics,Patient Restricted?,N,
+,,,,
+BCBI Clinic Visits,BCBI Clinic Providers,Patient Id,Y,Hash - Research ID
+BCBI Clinic Visits,BCBI Clinic Providers,Clinic Visit Encounter Csn,Y,Hash
+BCBI Clinic Visits,BCBI Clinic Providers,First Attending Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Attending Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Attending Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Attending Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Attending Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Attending Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Attending Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Attending Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Attending Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Attending Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Attending Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Attending Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Attending Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Attending Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Attending Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Attending Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Attending Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Attending Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Mid Level Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Mid Level Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Mid Level Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Mid Level Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Mid Level Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Mid Level Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Mid Level Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Mid Level Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Mid Level Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Mid Level Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Mid Level Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Mid Level Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Mid Level Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Mid Level Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Mid Level Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Mid Level Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Mid Level Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Mid Level Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Resident Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Resident Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Resident Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Resident Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Resident Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Resident Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Resident Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Resident Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Resident Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Resident Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Resident Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Resident Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Resident Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Resident Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Resident Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Resident Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Resident Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Resident Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Nurse Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Nurse Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Nurse Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Nurse Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Nurse Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,First Nurse Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Nurse Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Nurse Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Nurse Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Nurse Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Nurse Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Longest Nurse Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Nurse Assigned Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Nurse Assigned Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Nurse Assigned Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Nurse Assigned Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Nurse Assigned Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Last Nurse Assigned Third Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Case Manager Id,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Case Manager Npi,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Case Manager Dea Number,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Case Manager Primary Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Case Manager Second Specialty,N,
+BCBI Clinic Visits,BCBI Clinic Providers,Case Manager Third Specialty,N,
+ ```
+
+## Running the Pipeline
+
+To de-identify a data set, pass the config YAML to the `deidentify` function.
+</code></pre><p>julia deidentify(&quot;./config.yml&quot;)</p><pre><code class="language-none">This will read in the data, de-identify the data, write a log to file, and write the resulting data set to file.
+
+The pipeline consists of three main steps:
+* Read the configuration file and process the settings
+* De-identify and write the data set
+* Write the dictionaries with salts, dateshift values, and research IDs to files
+
+The `deidentify` function runs the three steps:
+</code></pre><p>julia proj<em>config = DeIdConfig(cfg</em>file) deid = DeIdentified(proj_config) ```</p><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../documentation/"><span class="direction">Next</span><span class="title">API</span></a></footer></article></body></html>
