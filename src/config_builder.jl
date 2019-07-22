@@ -111,18 +111,18 @@ end
     build_config_from_csv(project_name::String, file::String)
 
 Generates a configuration YAML file from a CSV file that defines the mappings.
-The CSV file needs to have at least three named columns, one called "Source Table"
+The CSV file needs to have at least three named columns, one called **Source Table**
 which defines the name of the CSV file the data will be read from, a second called
-"Field" which defines the name of the field in the data source and a final column
-called "Method" which contains the method to apply (one of "Hash - Research ID", "Hash",
-"Hash & Salt", "Date Shift", or "Drop").
+**Field** which defines the name of the field in the data source and a final column
+called **Method** which contains the method to apply (one of **Hash - Research ID**, **Hash**,
+**Hash & Salt**, **Date Shift**, or **Drop**).
 
 Any column renames and pre- or post-processing will need to be added manually to
 the file.
 """
 function build_config_from_csv(project_name::String, file::String;
         max_dateshift_days::Int=30, dateshift_years::Int=0, log_path::String="./logs",
-        output_path::String="./output", date_format::String="y-m-dTH:M:S",
+        output_path::String="./output", date_format::String="y-m-dTH:M:S.s",
         seed::Union{Int, Nothing}=nothing, config_file::Union{String, Nothing}=nothing)
     if !isfile(file)
         error("$file does not exist!")
@@ -193,7 +193,7 @@ end
     build_config(data_dir::String, config_file::String)
 
 Interactively guides user through writing a configuration YAML file for DeIdentification.
-The data_dir should contain one of each type of dataset you expect to deidentify
+The `data_dir` should contain one of each type of dataset you expect to deidentify
 (e.g. the data directory `./test/data'` contains `pat.csv`, `med.csv`, and `dx.csv`).
 The config builder reads the headers of each CSV file and iteratively asks about the
 output name and deidentification type of each column. The results are written to `config_file`.
@@ -207,10 +207,11 @@ function build_config(data_dir::String, config_file::String)
         error("data_dir must be a directory containing datasets to be de-identified")
     end
 
+    println("")
     println("DeIdentification Config Builder")
     println("===============================")
     println("Follow the prompts to build a draft of your config file using the datasets.")
-    println("The prompts are all written as 'Prompt [default] : '. If there is no default")
+    println("The prompts are all written as 'Prompt [default]: '. If there is no default")
     println("the field is required.")
     println("NOTE: this builder will not ask about pre- or post-processing, add after if needed")
     if lowercase(user_input("Ready to get started? [y] ", "y"))[1] != 'y'
@@ -232,7 +233,7 @@ function build_config(data_dir::String, config_file::String)
     yml["dateshift_years"] = user_input("Years to add to all dates [0]: ", "0")
     yml["log_path"] = user_input("Path for logs [./logs]: ", "./logs")
     yml["output_path"] = user_input("Path for output files [./output]: ", "./output")
-    yml["date_format"] = user_input("Input date format [y-m-dTH:M:S]: ", "y-m-dTH:M:S")
+    yml["date_format"] = user_input("Input date format [y-m-dTH:M:S.s]: ", "y-m-dTH:M:S.s")
 
     yml["primary_id"] = ""
     while yml["primary_id"] == ""
@@ -245,12 +246,13 @@ function build_config(data_dir::String, config_file::String)
 
     yml["datasets"] = []
     for file in Glob.glob(joinpath(data_dir, "*.csv"))
-        nm = user_input("Dataset Name [$(file[1:end-4])]: ", file[1:end-4]) # without '.csv'
-        fnm = joinpath(root,file)
+        bnm = basename(file)
+        nm = user_input("Dataset Name [$(bnm[1:end-4])]: ", bnm[1:end-4]) # without '.csv'
+        fnm = normpath(file)
 
         d = get_ds_dict(nm, fnm)
 
-        f = CSV.File(joinpath(root, file), dateformat = yml["date_format"])
+        f = CSV.File(fnm, dateformat = yml["date_format"])
 
         for i in 1:length(f.names)
             println("")

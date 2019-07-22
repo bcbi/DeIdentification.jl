@@ -53,7 +53,7 @@ function ProjectConfig(cfg_file::String)
     num_file = length(cfg["datasets"])
     outdir = cfg["output_path"]
     pk = Symbol(cfg["primary_id"])
-    dateformat = get(cfg, "date_format", "y-m-dTH:M:S")
+    dateformat = get(cfg, "date_format", "y-m-dTH:M:S.s")
 
     seed = get(cfg, "project_seed", _ -> make_seed()[1])
     maxdays = get(cfg, "max_dateshift_days", 30)
