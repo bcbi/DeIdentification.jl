@@ -3,9 +3,8 @@ block_labels = [ "DO NOT MERGE" ]
 delete_merged_branches = true
 
 status = [
-    # "codecov/patch",
-    # "codecov/project",
     "continuous-integration/travis-ci/push",
+    "continuous-integration/appveyor/branch"
 ]
 
 timeout_sec = 576000
