@@ -14,6 +14,7 @@ import Memento
 import DataStructures: OrderedDict
 import REPL
 using REPL.TerminalMenus
+using DelimitedFiles
 
 include("config_builder.jl")
 include("de_identify.jl")
@@ -71,8 +72,8 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
 
     open(outfile, "w") do io
         # write header to file
-        CSV.printheader(
-            io, [string(n) for n in new_names], ",", '"', '"', '"', '\n')
+        header = [string(n) for n in new_names]
+        writedlm(io, reshape(header, 1, length(header)), ',')
 
         # Process each row
         for row in infile
