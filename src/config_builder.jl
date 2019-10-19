@@ -174,7 +174,7 @@ function build_config_from_csv(project_name::String, file::String;
                 error("Primary ID in $data_set_name, $col_name is inconsistent with the rest of the data set")
             end
         else
-            warn("Unknown method $(row.Method) chosen for $data_set_name")
+            @warn("Unknown method $(row.Method) chosen for $data_set_name")
         end
     end
 
