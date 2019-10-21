@@ -29,9 +29,8 @@ Writes the deidentified data to a CSV file and updates the global dictionaries
 tracking identifier mappings.
 """
 function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
-
     # Initiate new file
-    infile = CSV.File(fc.filename, dateformat = pc.dateformat)
+    infile = CSV.File(fc.filename, dateformat = fc.dateformat)
     outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * getcurrentdate() * ".csv")
 
     ncol = length(infile.names)

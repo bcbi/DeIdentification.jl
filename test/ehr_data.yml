@@ -24,6 +24,19 @@ datasets:
       - "ArrivalDateandTime"
     drop_cols:
       - "DiagnosisTerminologyType"
+  - name: other_dx
+    filename: "./data/dx_different_date_format.csv"
+    date_format: "m-d-y H:M:S.s"
+    rename_cols:
+      - in: "EncounterBrownCSN"
+        out: "CSN"
+    hash_cols:
+      - "CSN"
+      - "PatientPrimaryMRN"
+    dateshift_cols:
+      - "ArrivalDateandTime"
+    drop_cols:
+      - "DiagnosisTerminologyType"
   - name: pat
     filename: "./data/pat.csv"
     # NOTE: renaming happens before any other operations (pre-processing, hashing, salting, dropping, dateshifting, post-processing)
