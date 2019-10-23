@@ -15,6 +15,9 @@ outputpath = joinpath(@__DIR__, "output")
 basepath_not_created = joinpath(@__DIR__, "path")
 logpath_not_created = joinpath(basepath_not_created, "to", "new", "logs")
 outputpath_not_created = joinpath(basepath_not_created, "to", "new", "output")
+default_max_days = 30
+default_shift_years = 100
+default_date_format = Dates.DateFormat("y-m-dTH:M:S.s")
 
 try
     isdir(logpath) && rm(logpath, recursive=true, force=true)
@@ -70,7 +73,7 @@ end
     ids2 = [6, 5, 3, 4, 5]
 
     # Check hashing and research ID generation
-    dicts = DeIdDicts(30, 100)
+    dicts = DeIdDicts(default_max_days, default_shift_years, default_date_format)
     hash1 = map( x-> DeIdentification.getoutput(dicts, DeIdentification.Hash, x, 0), ids1)
     hash2 = map( x-> DeIdentification.getoutput(dicts, DeIdentification.Hash, x, 0), ids2)
 

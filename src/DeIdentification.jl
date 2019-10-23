@@ -13,6 +13,7 @@ import Random: shuffle, randstring, seed!, make_seed
 import Memento
 import DataStructures: OrderedDict
 import REPL
+import Parsers
 using REPL.TerminalMenus
 using DelimitedFiles
 
@@ -30,7 +31,14 @@ tracking identifier mappings.
 """
 function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
     # Initiate new file
-    infile = CSV.File(fc.filename, dateformat = fc.dateformat)
+    infile = try
+        CSV.File(fc.filename, dateformat = fc.dateformat)
+    catch ArgumentError
+        CSV.File(fc.filename)
+    end
+
+    dicts = DeIdDicts(dicts, fc.dateformat)
+
     outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * getcurrentdate() * ".csv")
 
     ncol = length(infile.names)
@@ -75,52 +83,60 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
         writedlm(io, reshape(header, 1, length(header)), ',')
 
         # Process each row
-        for row in infile
+        for (i, row) in Iterators.enumerate(infile)
+            try
+                val = getoutput(dicts, Hash, getproperty(row, pcol), 0)
+                pid = setrid(val, dicts)
+                columns = Vector{String}()
 
-            val = getoutput(dicts, Hash, getproperty(row, pcol), 0)
-            pid = setrid(val, dicts)
+                for col in infile.names
+                    colname = get(fc.rename_cols, col, col)
 
-            for col in infile.names
-                colname = get(fc.rename_cols, col, col)
+                    action = get(fc.colmap, colname, Missing) ::Type
 
-                action = get(fc.colmap, colname, Missing) ::Type
-                # drop cols
-                action == Drop && continue
+                    if action == Drop
+                        continue
+                    end
 
-                VAL = getproperty(row, col)
+                    VAL = getproperty(row, col)
 
-                # apply pre-processing transform
-                if haskey(fc.preprocess, colname) && !ismissing(VAL)
-                    transform = fc.preprocess[colname]
-                    transform = replace(transform, "VAL" => "\"$VAL\"")
-                    expr = Meta.parse(transform)
-                    VAL = Core.eval(@__MODULE__, expr)
+                    # apply pre-processing transform
+                    if haskey(fc.preprocess, colname) && !ismissing(VAL)
+                        transform = fc.preprocess[colname]
+                        transform = replace(transform, "VAL" => "\"$VAL\"")
+                        expr = Meta.parse(transform)
+                        VAL = Core.eval(@__MODULE__, expr)
+                    end
+
+                    VAL = getoutput(dicts, action, VAL, pid)
+
+                    if col == pcol
+                        VAL = pid
+                    end
+
+                    # apply post-processing transform
+                    if haskey(fc.postprocess, colname) && !ismissing(VAL)
+                        transform = fc.postprocess[colname]
+                        transform = replace(transform, "VAL" => "\"$VAL\"")
+                        expr = Meta.parse(transform)
+                        VAL = Core.eval(@__MODULE__, expr)
+                    end
+
+                    if eltype(VAL) <: String
+                        VAL = replace(VAL, "\"" => "\\\"")
+                    end
+
+                    if VAL !== nothing && !ismissing(VAL)
+                        push!(columns, string(VAL))
+                    else
+                        push!(columns, "")
+                    end
                 end
 
-                VAL = getoutput(dicts, action, VAL, pid)
-
-                if col == pcol
-                    VAL = pid
-                end
-
-                # apply post-processing transform
-                if haskey(fc.postprocess, colname) && !ismissing(VAL)
-                    transform = fc.postprocess[colname]
-                    transform = replace(transform, "VAL" => "\"$VAL\"")
-                    expr = Meta.parse(transform)
-                    VAL = Core.eval(@__MODULE__, expr)
-                end
-
-                if eltype(VAL) <: String
-                    VAL = replace(VAL, "\"" => "\\\"")
-                end
-
-                write(io, "\"$VAL\"")
-                if lastcol == col
-                    write(io, '\n')
-                else
-                    write(io, ",")
-                end
+                writedlm(io, reshape(columns, 1, length(columns)), ',')
+            catch e
+                Memento.error(logger, "$(Dates.now()) Error occurred while processing row $i")
+                rethrow(e)
             end
         end
 
@@ -128,8 +144,6 @@ function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
 
     return nothing
 end
-
-
 
 """
     deidentify(cfg::ProjectConfig)
@@ -142,7 +156,7 @@ digest of the original primary ID to our new research IDs.
 """
 function deidentify(cfg::ProjectConfig)
     num_files = length(cfg.file_configs)
-    dicts = DeIdDicts(cfg.maxdays, cfg.shiftyears)
+    dicts = DeIdDicts(cfg.maxdays, cfg.shiftyears, cfg.dateformat)
 
     if !isdir(cfg.outdir)
         # mkpath also creates any intermediate paths
