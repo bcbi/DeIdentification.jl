@@ -13,6 +13,7 @@ import Random: shuffle, randstring, seed!, make_seed
 import Memento
 import DataStructures: OrderedDict
 import REPL
+import Parsers
 using REPL.TerminalMenus
 using DelimitedFiles
 
@@ -30,7 +31,14 @@ tracking identifier mappings.
 """
 function deid_file!(dicts::DeIdDicts, fc::FileConfig, pc::ProjectConfig, logger)
     # Initiate new file
-    infile = CSV.File(fc.filename, dateformat = fc.dateformat)
+    infile = try
+        CSV.File(fc.filename, dateformat = fc.dateformat)
+    catch ArgumentError
+        CSV.File(fc.filename)
+    end
+
+    dicts = DeIdDicts(dicts, fc.dateformat)
+
     outfile = joinpath(pc.outdir, "deid_" * fc.name * "_" * getcurrentdate() * ".csv")
 
     ncol = length(infile.names)
@@ -148,7 +156,7 @@ digest of the original primary ID to our new research IDs.
 """
 function deidentify(cfg::ProjectConfig)
     num_files = length(cfg.file_configs)
-    dicts = DeIdDicts(cfg.maxdays, cfg.shiftyears)
+    dicts = DeIdDicts(cfg.maxdays, cfg.shiftyears, cfg.dateformat)
 
     if !isdir(cfg.outdir)
         # mkpath also creates any intermediate paths

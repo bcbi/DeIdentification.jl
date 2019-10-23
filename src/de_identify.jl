@@ -25,7 +25,7 @@ struct FileConfig
     rename_cols::Dict{Symbol,Symbol}
     preprocess::Dict{Symbol, String}
     postprocess::Dict{Symbol, String}
-    dateformat::String
+    dateformat::Dates.DateFormat
 end
 
 
@@ -38,7 +38,7 @@ struct ProjectConfig
     maxdays::Int
     shiftyears::Int
     primary_id::Symbol
-    dateformat::String
+    dateformat::Dates.DateFormat
 end
 
 """
@@ -54,7 +54,7 @@ function ProjectConfig(cfg_file::String)
     num_file = length(cfg["datasets"])
     outdir = cfg["output_path"]
     pk = Symbol(cfg["primary_id"])
-    dateformat = get(cfg, "date_format", "y-m-dTH:M:S.s")
+    dateformat = Dates.DateFormat(get(cfg, "date_format", "y-m-dTH:M:S.s"))
 
     seed = get(_ -> make_seed()[1], cfg, "project_seed")
     maxdays = get(cfg, "max_dateshift_days", 30)
@@ -66,7 +66,12 @@ function ProjectConfig(cfg_file::String)
     # populate File Configs
     for (i, ds) in enumerate(cfg["datasets"])
         name = ds["name"]
-        file_dateformat = get(ds, "date_format", dateformat)
+        if haskey(ds, "date_format")
+            file_dateformat = Dates.DateFormat(get(ds, "date_format", "y-m-dTH:M:S.s"))
+        else
+            file_dateformat = dateformat
+        end
+
         rename_dict = Dict{Symbol,Symbol}()
         for pair in get(ds, "rename_cols", [])
             rename_dict[Symbol(pair["in"])] = Symbol(pair["out"])
@@ -105,17 +110,22 @@ struct DeIdDicts
     dateshift::Dict{Int, Int}
     maxdays::Int
     shiftyears::Int
+    dateformat::Dates.DateFormat
 end
 
 """
-    DeIdDicts(maxdays)
+    DeIdDicts(maxdays, shiftyears, dateformat)
 
 Structure containing dictionaries for project level mappings
 - Primary ID -> Research ID
 - Research ID -> DateShift number of days
 - Research ID -> Salt value
 """
-DeIdDicts(maxdays, shiftyears) = DeIdDicts(Dict{String, Int}(), Dict{Int, String}(), Dict{Int, Int}(), maxdays, shiftyears)
+DeIdDicts(maxdays, shiftyears, dateformat) = DeIdDicts(
+    Dict{String, Int}(), Dict{Int, String}(), Dict{Int, Int}(), maxdays, shiftyears, dateformat)
+
+DeIdDicts(current::DeIdDicts, dateformat::Dates.DateFormat) = DeIdDicts(
+    current.id, current.salt, current.dateshift, current.maxdays, current.shiftyears, dateformat)
 
 
 """
@@ -159,6 +169,22 @@ function dateshift_val!(dicts::DeIdDicts, val::Union{Dates.Date, Dates.DateTime,
     end
 
     return val + Dates.Day(n_days) + Dates.Year(dicts.shiftyears)
+
+end
+
+function dateshift_val!(dicts::DeIdDicts, val::String, pid::Int)
+
+    newval = Parsers.tryparse(Dates.DateTime, val, Parsers.Options(dateformat=dicts.dateformat))
+    if newval === nothing
+        newval = Parsers.tryparse(Dates.Date, val, Parsers.Options(dateformat=dicts.dateformat))
+    end
+
+    if newval === nothing
+        @warn "Could not date shift non-date value $val"
+        return missing
+    end
+
+    return dateshift_val!(dicts, newval, pid)
 
 end
 
