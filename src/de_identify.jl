@@ -172,15 +172,15 @@ function dateshift_val!(dicts::DeIdDicts, val::Union{Dates.Date, Dates.DateTime,
 
 end
 
-function dateshift_val!(dicts::DeIdDicts, val::String, pid::Int)
-
-    newval = Parsers.tryparse(Dates.DateTime, val, Parsers.Options(dateformat=dicts.dateformat))
+function dateshift_val!(dicts::DeIdDicts, val::AbstractString, pid::Int)
+    val_str = String(val)
+    newval = Parsers.tryparse(Dates.DateTime, val_str, Parsers.Options(dateformat=dicts.dateformat))
     if newval === nothing
-        newval = Parsers.tryparse(Dates.Date, val, Parsers.Options(dateformat=dicts.dateformat))
+        newval = Parsers.tryparse(Dates.Date, val_str, Parsers.Options(dateformat=dicts.dateformat))
     end
 
     if newval === nothing
-        @warn "Could not date shift non-date value $val"
+        @warn "Could not date shift non-date value $val_str"
         return missing
     end
 
