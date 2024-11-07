@@ -1,4 +1,4 @@
-
+using Random
 
 # prompt user for input and return it or the default
 function user_input(prompt::String, default::String)
@@ -103,8 +103,8 @@ function write_yaml(file::String, yml::AbstractDict)
     end
 end
 
-function remove_spaces(str::String; sub::String = "")
-    replace(str, " " => sub)
+function remove_spaces(input::AbstractString; sub::String="")
+    return replace(input, " " => sub)
 end
 
 """
@@ -136,7 +136,7 @@ function build_config_from_csv(project_name::String, file::String;
 
     yml = OrderedDict()
     yml["project"] = project_name
-    yml["seed"] = string(seed === nothing ? make_seed()[1] : seed)
+    yml["seed"] = string(seed === nothing ? rand(UInt32) : seed)
     yml["max_dateshift_days"] = string(max_dateshift_days)
     yml["dateshift_years"] = string(dateshift_years)
     yml["log_path"] = log_path

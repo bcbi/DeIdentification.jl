@@ -102,16 +102,16 @@ end
         for file in files
             if occursin(r"^deid_dx_.*csv", file)
                 dx = true
-                df = CSV.read(joinpath(root,file))
+                df = CSV.read(joinpath(root,file), DataFrame)
             elseif occursin(r"deid_pat_.*csv", file)
-                df_pat = CSV.read(joinpath(root,file))
+                df_pat = CSV.read(joinpath(root,file), DataFrame)
             elseif occursin(r"salts_.*json", file)
                 salts = true
             end
         end
     end
 
-    dfo = CSV.read(joinpath(@__DIR__, "data", "dx.csv"))
+    dfo = CSV.read(joinpath(@__DIR__, "data", "dx.csv"), DataFrame)
 
     # test column name change
     @test in(:EncounterBrownCSN, getfield(getfield(dfo, :colindex),:names))
