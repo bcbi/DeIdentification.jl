@@ -9,7 +9,7 @@ import Tables
 import CSV
 import Dates
 import SHA: bytes2hex, sha256
-import Random: shuffle, randstring, seed!, make_seed
+import Random: shuffle, randstring, seed!
 import Memento
 import DataStructures: OrderedDict
 import REPL

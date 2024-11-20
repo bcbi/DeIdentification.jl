@@ -227,7 +227,7 @@ function build_config(data_dir::String, config_file::String)
     println("---------------------------------------")
 
     yml["project"] = user_input("Project name [$(basename(data_dir))]: ", basename(data_dir))
-    seed = make_seed()[1]
+    seed = rand(UInt32)
     yml["project_seed"] = user_input("Project seed [$seed]: (used for reproducibility) ", string(seed))
     yml["max_dateshift_days"] = user_input("Maximum Date Shift Days [30]: ", "30")
     yml["dateshift_years"] = user_input("Years to add to all dates [0]: ", "0")
