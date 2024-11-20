@@ -56,7 +56,7 @@ function ProjectConfig(cfg_file::String)
     pk = Symbol(cfg["primary_id"])
     dateformat = Dates.DateFormat(get(cfg, "date_format", "y-m-dTH:M:S.s"))
 
-    seed = get(_ -> make_seed()[1], cfg, "project_seed")
+    seed = get(_ -> rand(UInt32), cfg, "project_seed")
     maxdays = get(cfg, "max_dateshift_days", 30)
     shiftyears = get(cfg, "dateshift_years", 0)
 
