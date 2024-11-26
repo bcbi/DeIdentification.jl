@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/145617556.svg)](https://zenodo.org/badge/latestdoi/145617556)
 
-[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://bcbi.github.io/DeIdentification.jl/latest)
+[![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://github.com/bcbi/DeIdentification.jl/)
 
 [![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/12280)
 [![Build Status](https://travis-ci.org/bcbi/DeIdentification.jl.svg?branch=master)](https://travis-ci.org/bcbi/DeIdentification.jl)
